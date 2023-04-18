@@ -253,8 +253,7 @@ function staff(sub) {
         term.echo("[[b;#fff;] Dr.] Tbx");
         term.echo("[[b;#fff;] Dr.] Mccloud");
         term.echo("[[b;#fff;] Other Lab Staff: ")
-        var i = 0;
-        for (i = 0; i < emp.length; i++) {
+        for (var i = 0, n = emp.length; i < n; i++) {
             term.echo("  "+emp[i]);
         }
     }
@@ -1359,7 +1358,7 @@ async function approve() {
 }
 
 async function mintBadge(name) {
-  for (var i = 0; i < emp.length; i++){
+  for (var i = 0, n = emp.length; i < n; i++){
     if (name == emp[i]) {
       onList = true;
       break;
