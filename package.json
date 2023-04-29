@@ -1,5 +1,14 @@
 {
+  "name": "web3-app",
+  "version": "1.0.0",
+  "description": "Web3 application",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
   "dependencies": {
     "web3": "^1.7.3"
-  }
+  },
+  "license": "MIT"
 }
