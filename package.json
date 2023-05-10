@@ -1,14 +1,30 @@
 {
   "name": "web3-app",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Web3 application",
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "nodemon index.js",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage"
   },
   "dependencies": {
+    "dotenv": "^16.0.3",
     "web3": "^1.7.3"
+  },
+  "devDependencies": {
+    "eslint": "^8.30.0",
+    "jest": "^29.3.1",
+    "nodemon": "^2.0.20",
+    "prettier": "^2.8.1"
+  },
+  "engines": {
+    "node": ">=16.0.0"
   },
   "license": "MIT"
 }
