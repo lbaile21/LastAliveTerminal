@@ -196,6 +196,10 @@ function web3() {
 }
 
 function addToStaff(name) {
+  if (!name || typeof name !== 'string') {
+    term.echo("Please pass a valid name: addToStaff('<Name>')");
+    return;
+  }
   term.echo("Adding you to the staff list...")
   emp.push(name);
   onList = true;
@@ -1358,12 +1362,7 @@ async function approve() {
 }
 
 async function mintBadge(name) {
-  for (var i = 0, n = emp.length; i < n; i++){
-    if (name == emp[i]) {
-      onList = true;
-      break;
-    }
-  }
+  onList = emp.indexOf(name) !== -1;
     if (approvedFor >= 50 && onList == true) {
         await loadLastAliveContr();
         lastAlive.methods
