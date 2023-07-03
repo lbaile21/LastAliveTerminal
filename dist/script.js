@@ -9,6 +9,8 @@ let loginName = false;
 let onList = false;
 let approvedFor = 0;
 const fantomId = '0x61';
+// Cost in Blood Tokens required to mint a survival badge.
+const BADGE_COST = 50;
 function exit() {
   $('.tv').addClass('collapse');
   term.disable();
@@ -16,6 +18,13 @@ function exit() {
 
 // ref: https://stackoverflow.com/q/67322922/387194
 var __EVAL = (s) => eval(`void (__EVAL = ${__EVAL}); ${s}`);
+
+// Commands that look like properties but must be invoked with ().
+// Centralised so the list is easy to audit and extend.
+var CALLABLE_COMMANDS = [
+  'password', 'systemCTL', 'su', 'joe', 'lab', 'kotor',
+  'staff', 'commands', 'numberOfSurvivors'
+];
 
 var term = $('#terminal').terminal(
     function (command, term) {
@@ -34,9 +43,8 @@ var term = $('#terminal').terminal(
         login = true;
     } 
         
-    else if (cmd.name == 'password' || cmd.name == 'systemCTL' || cmd.name == 'su' || cmd.name == 'joe' || cmd.name == 'lab'
-            || cmd.name == 'kotor' || cmd.name == 'staff' || cmd.name == 'commands' || cmd.name == 'lab' || cmd.name == 'numberOfSurvivors') {
-        term.echo("Make sure to use () after your command to execute!");    
+    else if (CALLABLE_COMMANDS.indexOf(cmd.name) !== -1) {
+        term.echo("Make sure to use () after your command to execute!");
         }   
       else if (cmd.name === 'exit') {
       exit();
@@ -1354,23 +1362,23 @@ async function mintToken(num) {
 async function approve() {
   await loadBloodTknContr();
   window.bloodToken.methods
-    .approve(lastAliveAddr, BigInt(50 * 10 ** 18))
+    .approve(lastAliveAddr, BigInt(BADGE_COST * 10 ** 18))
     .send({ from: ethereum.selectedAddress });
     term.echo('Your are pending approval to mint a badge. Please wait until Metamask confirmation...');
-    term.echo('Make sure you have 50 Blood Tokens to spend');
-    approvedFor += 50;
+    term.echo(`Make sure you have ${BADGE_COST} Blood Tokens to spend`);
+    approvedFor += BADGE_COST;
 }
 
 async function mintBadge(name) {
   onList = emp.indexOf(name) !== -1;
-    if (approvedFor >= 50 && onList == true) {
+    if (approvedFor >= BADGE_COST && onList == true) {
         await loadLastAliveContr();
         lastAlive.methods
-            .safemint(ethereum.selectedAddress, BigInt(50 * 10 ** 18))
+            .safemint(ethereum.selectedAddress, BigInt(BADGE_COST * 10 ** 18))
             .send({ from: ethereum.selectedAddress });
         term.echo(`Your Badge has been generated and sent to...`);
         term.echo(ethereum.selectedAddress);
-        approvedFor -= 50;
+        approvedFor -= BADGE_COST;
     } else {
       term.echo("You need to Get Approved First!");
       term.echo("--------------------------------------");
