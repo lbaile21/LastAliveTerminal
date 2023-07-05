@@ -6,7 +6,7 @@ const deepai = require('deepai'); // OR include deepai.min.js as a script tag in
 //////////////////Convert Image into Cartoon/////////////////////////
 
 const API_KEY = process.env.DEEPAI_API_KEY || 'quickstart-QUdJIGlzIGNvbWluZy4uLi4K';
-const SUPPORTED_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.bmp', '.gif'];
+const SUPPORTED_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.bmp', '.gif', '.webp'];
 
 deepai.setApiKey(API_KEY);
 
@@ -66,4 +66,4 @@ if (require.main === module) {
     main();
 }
 
-module.exports = { toonifyImage, validateImagePath };
+module.exports = { toonifyImage, validateImagePath, SUPPORTED_EXTENSIONS };
