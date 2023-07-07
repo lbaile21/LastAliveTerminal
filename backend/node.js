@@ -12,7 +12,8 @@ deepai.setApiKey(API_KEY);
 
 /**
  * Validate that the provided path points to a readable image file
- * with a supported extension.
+ * with a supported extension. Throws a descriptive, screen-reader
+ * friendly error message on failure.
  */
 function validateImagePath(imagePath) {
     if (!imagePath || typeof imagePath !== 'string') {
@@ -53,6 +54,11 @@ async function toonifyImage(imagePath) {
 
 async function main() {
     const inputPath = process.argv[2] || '/path/to/your/file.jpg';
+    if (!process.argv[2]) {
+        console.error('Usage: node node.js <path-to-image>');
+        process.exitCode = 1;
+        return;
+    }
     try {
         const resp = await toonifyImage(inputPath);
         console.log(resp);
