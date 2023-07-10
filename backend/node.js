@@ -7,6 +7,7 @@ const deepai = require('deepai'); // OR include deepai.min.js as a script tag in
 
 const API_KEY = process.env.DEEPAI_API_KEY || 'quickstart-QUdJIGlzIGNvbWluZy4uLi4K';
 const SUPPORTED_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.bmp', '.gif', '.webp'];
+const SUPPORTED_EXTENSIONS_SET = new Set(SUPPORTED_EXTENSIONS);
 
 deepai.setApiKey(API_KEY);
 
@@ -20,17 +21,18 @@ function validateImagePath(imagePath) {
         throw new TypeError('imagePath must be a non-empty string');
     }
 
-    if (!fs.existsSync(imagePath)) {
+    let stat;
+    try {
+        stat = fs.statSync(imagePath);
+    } catch (e) {
         throw new Error(`File not found: ${imagePath}`);
     }
-
-    const stat = fs.statSync(imagePath);
     if (!stat.isFile()) {
         throw new Error(`Not a regular file: ${imagePath}`);
     }
 
     const ext = path.extname(imagePath).toLowerCase();
-    if (!SUPPORTED_EXTENSIONS.includes(ext)) {
+    if (!SUPPORTED_EXTENSIONS_SET.has(ext)) {
         throw new Error(`Unsupported image extension '${ext}'. Supported: ${SUPPORTED_EXTENSIONS.join(', ')}`);
     }
 }
