@@ -34,8 +34,8 @@ Before opening a pull request, please verify the following:
   could trigger vestibular disorders.
 - **Semantics first.** Prefer native HTML elements; reach for ARIA only
   when no semantic equivalent exists, and follow the "first rule of ARIA".
-- **Forms.** Associate every input with a label and surface validation
-  errors in text, not just color.
+- **Forms.** Associate every input with a label, mark required fields
+  programmatically, and surface validation errors in text, not just color.
 
 ### Testing
 
