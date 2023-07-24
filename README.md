@@ -8,6 +8,7 @@ A lightweight utility focused on fast, predictable performance.
 - [Accessibility](#accessibility)
   - [Contributor Checklist](#contributor-checklist)
   - [Testing](#testing)
+  - [Tooling](#tooling)
   - [Reporting Issues](#reporting-issues)
 
 ## Getting Started
@@ -44,9 +45,20 @@ At minimum, exercise changes with:
 1. Keyboard-only navigation (no mouse or trackpad).
 2. One screen reader — NVDA, JAWS, VoiceOver, TalkBack, or Orca.
 3. An automated checker such as axe or Lighthouse for obvious regressions.
+4. Page zoom at 200% to confirm the layout reflows without loss of content.
 
 Automated tools catch only a fraction of issues, so manual verification
 remains important.
+
+### Tooling
+
+The following tools are useful but not required; pick whatever fits your
+workflow:
+
+- [axe DevTools](https://www.deque.com/axe/) browser extension.
+- Lighthouse, built into Chromium-based browsers.
+- The Accessibility panel in Firefox or Chrome DevTools for inspecting the
+  accessibility tree and computed roles.
 
 ### Reporting Issues
 
