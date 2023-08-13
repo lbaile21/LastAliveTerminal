@@ -37,6 +37,8 @@ Before opening a pull request, please verify the following:
   when no semantic equivalent exists, and follow the "first rule of ARIA".
 - **Forms.** Associate every input with a label, mark required fields
   programmatically, and surface validation errors in text, not just color.
+- **Headings.** Use a single `h1` per page and avoid skipping heading
+  levels, so the document outline remains coherent to screen readers.
 
 ### Testing
 
@@ -46,9 +48,11 @@ At minimum, exercise changes with:
 2. One screen reader — NVDA, JAWS, VoiceOver, TalkBack, or Orca.
 3. An automated checker such as axe or Lighthouse for obvious regressions.
 4. Page zoom at 200% to confirm the layout reflows without loss of content.
+5. Forced-colors / high-contrast mode to confirm essential UI remains
+   visible when user color overrides are active.
 
-Automated tools catch only a fraction of issues, so manual verification
-remains important.
+Automated tools catch only a fraction of issues (commonly cited estimates
+put it around 30–40%), so manual verification remains important.
 
 ### Tooling
 
