@@ -44,12 +44,17 @@ Before opening a pull request, please verify the following:
 
 At minimum, exercise changes with:
 
-1. Keyboard-only navigation (no mouse or trackpad).
+1. Keyboard-only navigation (no mouse or trackpad). Confirm that focus
+   never becomes trapped and that the visible focus indicator is always
+   discernible against the current background.
 2. One screen reader — NVDA, JAWS, VoiceOver, TalkBack, or Orca.
 3. An automated checker such as axe or Lighthouse for obvious regressions.
-4. Page zoom at 200% to confirm the layout reflows without loss of content.
+4. Page zoom at 200% to confirm the layout reflows without loss of content
+   or functionality, including any sticky headers or off-canvas menus.
 5. Forced-colors / high-contrast mode to confirm essential UI remains
    visible when user color overrides are active.
+6. Text spacing overrides (line height 1.5×, paragraph spacing 2×) to
+   confirm content does not clip or overlap.
 
 Automated tools catch only a fraction of issues (commonly cited estimates
 put it around 30–40%), so manual verification remains important.
