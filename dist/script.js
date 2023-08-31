@@ -11,6 +11,9 @@ let approvedFor = 0;
 const fantomId = '0x61';
 // Cost in Blood Tokens required to mint a survival badge.
 const BADGE_COST = 50;
+// Precomputed 10^18 multiplier; avoids recomputing the exponent on every call.
+const TOKEN_DECIMALS = 18;
+const TOKEN_UNIT = 10 ** TOKEN_DECIMALS;
 function exit() {
   $('.tv').addClass('collapse');
   term.disable();
@@ -25,6 +28,8 @@ var CALLABLE_COMMANDS = [
   'password', 'systemCTL', 'su', 'joe', 'lab', 'kotor',
   'staff', 'commands', 'numberOfSurvivors'
 ];
+// O(1) lookup set built once from the list above.
+var CALLABLE_COMMANDS_SET = new Set(CALLABLE_COMMANDS);
 
 var term = $('#terminal').terminal(
     function (command, term) {
@@ -43,7 +48,7 @@ var term = $('#terminal').terminal(
         login = true;
     } 
         
-    else if (CALLABLE_COMMANDS.indexOf(cmd.name) !== -1) {
+    else if (CALLABLE_COMMANDS_SET.has(cmd.name)) {
         term.echo("Make sure to use () after your command to execute!");
         }   
       else if (cmd.name === 'exit') {
@@ -1351,7 +1356,7 @@ async function mintToken(num) {
          await loadBloodTknContr();
         window.bloodToken.methods
             .mint()
-            .send({ from: ethereum.selectedAddress, value: num * (10 ** 18) });
+            .send({ from: ethereum.selectedAddress, value: num * TOKEN_UNIT });
         console.log('You are minting tokens...');
     }
     else {
@@ -1362,7 +1367,7 @@ async function mintToken(num) {
 async function approve() {
   await loadBloodTknContr();
   window.bloodToken.methods
-    .approve(lastAliveAddr, BigInt(BADGE_COST * 10 ** 18))
+    .approve(lastAliveAddr, BigInt(BADGE_COST) * BigInt(TOKEN_UNIT))
     .send({ from: ethereum.selectedAddress });
     term.echo('Your are pending approval to mint a badge. Please wait until Metamask confirmation...');
     term.echo(`Make sure you have ${BADGE_COST} Blood Tokens to spend`);
@@ -1374,7 +1379,7 @@ async function mintBadge(name) {
     if (approvedFor >= BADGE_COST && onList == true) {
         await loadLastAliveContr();
         lastAlive.methods
-            .safemint(ethereum.selectedAddress, BigInt(BADGE_COST * 10 ** 18))
+            .safemint(ethereum.selectedAddress, BigInt(BADGE_COST) * BigInt(TOKEN_UNIT))
             .send({ from: ethereum.selectedAddress });
         term.echo(`Your Badge has been generated and sent to...`);
         term.echo(ethereum.selectedAddress);
@@ -1411,7 +1416,7 @@ async function numberOfSurvivors() {
 async function myBalance() {
     await loadBloodTknContr();
     var bal = await bloodToken.methods.balanceOf(ethereum.selectedAddress).call();
-    var bal = bal / (10 ** 18);
+    bal = bal / TOKEN_UNIT;
     term.echo(`Your current Blood Token Balance is ${bal}`);
 }
 
