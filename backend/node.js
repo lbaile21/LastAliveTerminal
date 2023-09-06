@@ -16,6 +16,23 @@ const MAX_IMAGE_BYTES = Number(process.env.TOONIFY_MAX_BYTES) || 25 * 1024 * 102
 deepai.setApiKey(API_KEY);
 
 /**
+ * Format a byte count as a human-readable string (e.g. "1.4 MiB").
+ * Used in error messages so operators and screen-reader users get a
+ * value that's easier to parse than a raw byte count.
+ */
+function formatBytes(bytes) {
+    if (!Number.isFinite(bytes) || bytes < 0) return String(bytes);
+    const units = ['B', 'KiB', 'MiB', 'GiB'];
+    let i = 0;
+    let value = bytes;
+    while (value >= 1024 && i < units.length - 1) {
+        value /= 1024;
+        i++;
+    }
+    return `${value.toFixed(i === 0 ? 0 : 1)} ${units[i]}`;
+}
+
+/**
  * Validate that the provided path points to a readable image file
  * with a supported extension and a reasonable size. Throws a
  * descriptive error message on failure.
@@ -38,7 +55,7 @@ function validateImagePath(imagePath) {
         throw new Error(`Image file is empty: ${imagePath}`);
     }
     if (stat.size > MAX_IMAGE_BYTES) {
-        throw new Error(`Image too large (${stat.size} bytes); limit is ${MAX_IMAGE_BYTES} bytes`);
+        throw new Error(`Image too large (${formatBytes(stat.size)}); limit is ${formatBytes(MAX_IMAGE_BYTES)}`);
     }
 
     const ext = path.extname(imagePath).toLowerCase();
@@ -87,4 +104,4 @@ if (require.main === module) {
     main();
 }
 
-module.exports = { toonifyImage, validateImagePath, SUPPORTED_EXTENSIONS, MAX_IMAGE_BYTES };
+module.exports = { toonifyImage, validateImagePath, formatBytes, SUPPORTED_EXTENSIONS, MAX_IMAGE_BYTES };
