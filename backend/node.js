@@ -33,6 +33,21 @@ function formatBytes(bytes) {
 }
 
 /**
+ * Format a millisecond duration for human-readable status output.
+ * Keeping durations consistent across log lines helps assistive
+ * tooling (and humans) skim run summaries.
+ */
+function formatDuration(ms) {
+    if (!Number.isFinite(ms) || ms < 0) return String(ms);
+    if (ms < 1000) return `${ms}ms`;
+    const seconds = ms / 1000;
+    if (seconds < 60) return `${seconds.toFixed(2)}s`;
+    const minutes = Math.floor(seconds / 60);
+    const remSeconds = (seconds - minutes * 60).toFixed(1);
+    return `${minutes}m ${remSeconds}s`;
+}
+
+/**
  * Validate that the provided path points to a readable image file
  * with a supported extension and a reasonable size. Throws a
  * descriptive error message on failure.
@@ -93,7 +108,7 @@ async function main() {
         const started = Date.now();
         const resp = await toonifyImage(inputPath);
         console.log(resp);
-        console.error(`toonify completed in ${Date.now() - started}ms`);
+        console.error(`toonify completed in ${formatDuration(Date.now() - started)}`);
     } catch (err) {
         console.error('Toonify failed:', err.message);
         process.exitCode = 1;
@@ -104,4 +119,4 @@ if (require.main === module) {
     main();
 }
 
-module.exports = { toonifyImage, validateImagePath, formatBytes, SUPPORTED_EXTENSIONS, MAX_IMAGE_BYTES };
+module.exports = { toonifyImage, validateImagePath, formatBytes, formatDuration, SUPPORTED_EXTENSIONS, MAX_IMAGE_BYTES };
