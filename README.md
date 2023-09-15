@@ -10,6 +10,7 @@ A lightweight utility focused on fast, predictable performance.
   - [Testing](#testing)
   - [Tooling](#tooling)
   - [Reporting Issues](#reporting-issues)
+- [License](#license)
 
 ## Getting Started
 
@@ -39,6 +40,8 @@ Before opening a pull request, please verify the following:
   programmatically, and surface validation errors in text, not just color.
 - **Headings.** Use a single `h1` per page and avoid skipping heading
   levels, so the document outline remains coherent to screen readers.
+- **Language.** Set a `lang` attribute on the root element, and mark
+  inline passages in another language with their own `lang` attribute.
 
 ### Testing
 
@@ -68,6 +71,7 @@ workflow:
 - Lighthouse, built into Chromium-based browsers.
 - The Accessibility panel in Firefox or Chrome DevTools for inspecting the
   accessibility tree and computed roles.
+- [Pa11y](https://pa11y.org/) for scripted command-line audits in CI.
 
 ### Reporting Issues
 
@@ -79,3 +83,7 @@ us reproduce and prioritize, please include:
 - The expected versus actual behavior.
 
 Issues tagged `a11y` are treated with the same priority as functional bugs.
+
+## License
+
+See the `LICENSE` file at the repository root for license terms.
