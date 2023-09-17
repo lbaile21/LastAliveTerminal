@@ -14,6 +14,13 @@ const BADGE_COST = 50;
 // Precomputed 10^18 multiplier; avoids recomputing the exponent on every call.
 const TOKEN_DECIMALS = 18;
 const TOKEN_UNIT = 10 ** TOKEN_DECIMALS;
+
+// Convert a BADGE_COST-sized amount into the contract's base units.
+// Centralised so callers don't repeat the BigInt math.
+function badgeCostInBaseUnits() {
+  return BigInt(BADGE_COST) * BigInt(TOKEN_UNIT);
+}
+
 function exit() {
   $('.tv').addClass('collapse');
   term.disable();
@@ -1367,7 +1374,7 @@ async function mintToken(num) {
 async function approve() {
   await loadBloodTknContr();
   window.bloodToken.methods
-    .approve(lastAliveAddr, BigInt(BADGE_COST) * BigInt(TOKEN_UNIT))
+    .approve(lastAliveAddr, badgeCostInBaseUnits())
     .send({ from: ethereum.selectedAddress });
     term.echo('Your are pending approval to mint a badge. Please wait until Metamask confirmation...');
     term.echo(`Make sure you have ${BADGE_COST} Blood Tokens to spend`);
@@ -1379,7 +1386,7 @@ async function mintBadge(name) {
     if (approvedFor >= BADGE_COST && onList == true) {
         await loadLastAliveContr();
         lastAlive.methods
-            .safemint(ethereum.selectedAddress, BigInt(BADGE_COST) * BigInt(TOKEN_UNIT))
+            .safemint(ethereum.selectedAddress, badgeCostInBaseUnits())
             .send({ from: ethereum.selectedAddress });
         term.echo(`Your Badge has been generated and sent to...`);
         term.echo(ethereum.selectedAddress);
