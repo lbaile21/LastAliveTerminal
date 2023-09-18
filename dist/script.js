@@ -21,6 +21,11 @@ function badgeCostInBaseUnits() {
   return BigInt(BADGE_COST) * BigInt(TOKEN_UNIT);
 }
 
+// Convert a whole-token amount into the contract's base units (wei-equivalent).
+function toBaseUnits(amount) {
+  return BigInt(amount) * BigInt(TOKEN_UNIT);
+}
+
 function exit() {
   $('.tv').addClass('collapse');
   term.disable();
