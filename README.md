@@ -42,6 +42,8 @@ Before opening a pull request, please verify the following:
   levels, so the document outline remains coherent to screen readers.
 - **Language.** Set a `lang` attribute on the root element, and mark
   inline passages in another language with their own `lang` attribute.
+- **Link text.** Use descriptive link text; avoid bare "click here" or
+  "read more" phrasing that loses meaning out of context.
 
 ### Testing
 
