@@ -48,6 +48,16 @@ function formatDuration(ms) {
 }
 
 /**
+ * Emit a status line to stderr in a stable, screen-reader-friendly
+ * format: "[level] message". Centralising this keeps log output
+ * predictable for assistive tooling that consumes our stderr stream.
+ */
+function logStatus(level, message) {
+    const lvl = String(level || 'info').toLowerCase();
+    console.error(`[${lvl}] ${message}`);
+}
+
+/**
  * Validate that the provided path points to a readable image file
  * with a supported extension and a reasonable size. Throws a
  * descriptive error message on failure.
@@ -101,16 +111,18 @@ async function main() {
     const inputPath = process.argv[2];
     if (!inputPath) {
         console.error('Usage: node node.js <path-to-image>');
+        console.error(`Supported extensions: ${SUPPORTED_EXTENSIONS.join(', ')}`);
         process.exitCode = 1;
         return;
     }
     try {
         const started = Date.now();
+        logStatus('info', `toonifying ${inputPath}`);
         const resp = await toonifyImage(inputPath);
         console.log(resp);
-        console.error(`toonify completed in ${formatDuration(Date.now() - started)}`);
+        logStatus('info', `toonify completed in ${formatDuration(Date.now() - started)}`);
     } catch (err) {
-        console.error('Toonify failed:', err.message);
+        logStatus('error', `toonify failed: ${err.message}`);
         process.exitCode = 1;
     }
 }
@@ -119,4 +131,4 @@ if (require.main === module) {
     main();
 }
 
-module.exports = { toonifyImage, validateImagePath, formatBytes, formatDuration, SUPPORTED_EXTENSIONS, MAX_IMAGE_BYTES };
+module.exports = { toonifyImage, validateImagePath, formatBytes, formatDuration, logStatus, SUPPORTED_EXTENSIONS, MAX_IMAGE_BYTES };
