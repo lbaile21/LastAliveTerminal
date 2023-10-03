@@ -109,10 +109,12 @@ async function toonifyImage(imagePath) {
 
 async function main() {
     const inputPath = process.argv[2];
-    if (!inputPath) {
-        console.error('Usage: node node.js <path-to-image>');
-        console.error(`Supported extensions: ${SUPPORTED_EXTENSIONS.join(', ')}`);
-        process.exitCode = 1;
+    if (!inputPath || inputPath === '-h' || inputPath === '--help') {
+        const out = inputPath ? console.log : console.error;
+        out('Usage: node node.js <path-to-image>');
+        out(`Supported extensions: ${SUPPORTED_EXTENSIONS.join(', ')}`);
+        out(`Maximum image size: ${formatBytes(MAX_IMAGE_BYTES)}`);
+        process.exitCode = inputPath ? 0 : 1;
         return;
     }
     try {
