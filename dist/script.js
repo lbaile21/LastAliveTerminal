@@ -15,15 +15,15 @@ const BADGE_COST = 50;
 const TOKEN_DECIMALS = 18;
 const TOKEN_UNIT = 10 ** TOKEN_DECIMALS;
 
-// Convert a BADGE_COST-sized amount into the contract's base units.
-// Centralised so callers don't repeat the BigInt math.
-function badgeCostInBaseUnits() {
-  return BigInt(BADGE_COST) * BigInt(TOKEN_UNIT);
-}
-
 // Convert a whole-token amount into the contract's base units (wei-equivalent).
+// Centralised so callers don't repeat the BigInt math.
 function toBaseUnits(amount) {
   return BigInt(amount) * BigInt(TOKEN_UNIT);
+}
+
+// Convert a BADGE_COST-sized amount into the contract's base units.
+function badgeCostInBaseUnits() {
+  return toBaseUnits(BADGE_COST);
 }
 
 function exit() {
