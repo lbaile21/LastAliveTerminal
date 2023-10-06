@@ -11,6 +11,7 @@ const SUPPORTED_EXTENSIONS_SET = new Set(SUPPORTED_EXTENSIONS);
 
 // Cap the file size we'll stream to the remote API to avoid wasted
 // bandwidth and long-running requests on obviously-too-large inputs.
+// Override via the TOONIFY_MAX_BYTES environment variable (in bytes).
 const MAX_IMAGE_BYTES = Number(process.env.TOONIFY_MAX_BYTES) || 25 * 1024 * 1024; // 25 MiB
 
 deepai.setApiKey(API_KEY);
@@ -61,6 +62,11 @@ function logStatus(level, message) {
  * Validate that the provided path points to a readable image file
  * with a supported extension and a reasonable size. Throws a
  * descriptive error message on failure.
+ *
+ * @param {string} imagePath Filesystem path to the candidate image.
+ * @throws {TypeError} If imagePath is not a non-empty string.
+ * @throws {Error} If the file is missing, empty, too large, or has an
+ *   unsupported extension.
  */
 function validateImagePath(imagePath) {
     if (!imagePath || typeof imagePath !== 'string') {
