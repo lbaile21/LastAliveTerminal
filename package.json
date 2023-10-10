@@ -36,6 +36,7 @@
       "!**/node_modules/**",
       "!**/coverage/**",
       "!**/test/**",
+      "!**/__tests__/**",
       "!jest.config.js"
     ],
     "coverageThreshold": {
