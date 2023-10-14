@@ -12,7 +12,15 @@ const SUPPORTED_EXTENSIONS_SET = new Set(SUPPORTED_EXTENSIONS);
 // Cap the file size we'll stream to the remote API to avoid wasted
 // bandwidth and long-running requests on obviously-too-large inputs.
 // Override via the TOONIFY_MAX_BYTES environment variable (in bytes).
-const MAX_IMAGE_BYTES = Number(process.env.TOONIFY_MAX_BYTES) || 25 * 1024 * 1024; // 25 MiB
+const DEFAULT_MAX_IMAGE_BYTES = 25 * 1024 * 1024; // 25 MiB
+function resolveMaxImageBytes() {
+    const raw = process.env.TOONIFY_MAX_BYTES;
+    if (raw === undefined || raw === '') return DEFAULT_MAX_IMAGE_BYTES;
+    const parsed = Number(raw);
+    if (!Number.isFinite(parsed) || parsed <= 0) return DEFAULT_MAX_IMAGE_BYTES;
+    return Math.floor(parsed);
+}
+const MAX_IMAGE_BYTES = resolveMaxImageBytes();
 
 deepai.setApiKey(API_KEY);
 
@@ -69,7 +77,7 @@ function logStatus(level, message) {
  *   unsupported extension.
  */
 function validateImagePath(imagePath) {
-    if (!imagePath || typeof imagePath !== 'string') {
+    if (typeof imagePath !== 'string' || imagePath.length === 0) {
         throw new TypeError('imagePath must be a non-empty string');
     }
 
@@ -104,10 +112,21 @@ async function toonifyImage(imagePath) {
     validateImagePath(imagePath);
 
     const stream = fs.createReadStream(imagePath, { highWaterMark: 1024 * 256 });
+    let settled = false;
+    const streamError = new Promise((_, reject) => {
+        stream.once('error', (err) => {
+            settled = true;
+            reject(new Error(`Failed to read image '${imagePath}': ${err.message}`));
+        });
+    });
     try {
-        return await deepai.callStandardApi('toonify', { image: stream });
+        return await Promise.race([
+            deepai.callStandardApi('toonify', { image: stream }),
+            streamError,
+        ]);
     } finally {
-        if (typeof stream.destroy === 'function') {
+        settled = true;
+        if (typeof stream.destroy === 'function' && !stream.destroyed) {
             stream.destroy();
         }
     }
