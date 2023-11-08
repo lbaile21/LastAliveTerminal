@@ -26,6 +26,16 @@ function badgeCostInBaseUnits() {
   return toBaseUnits(BADGE_COST);
 }
 
+// Convert a base-unit balance back to a whole-token amount for display.
+function fromBaseUnits(amount) {
+  return Number(amount) / TOKEN_UNIT;
+}
+
+// Return the address currently selected in the connected wallet, or null.
+function selectedAddress() {
+  return (window.ethereum && window.ethereum.selectedAddress) || null;
+}
+
 function exit() {
   $('.tv').addClass('collapse');
   term.disable();
@@ -1368,7 +1378,7 @@ async function mintToken(num) {
          await loadBloodTknContr();
         window.bloodToken.methods
             .mint()
-            .send({ from: ethereum.selectedAddress, value: num * TOKEN_UNIT });
+            .send({ from: selectedAddress(), value: num * TOKEN_UNIT });
         console.log('You are minting tokens...');
     }
     else {
@@ -1380,7 +1390,7 @@ async function approve() {
   await loadBloodTknContr();
   window.bloodToken.methods
     .approve(lastAliveAddr, badgeCostInBaseUnits())
-    .send({ from: ethereum.selectedAddress });
+    .send({ from: selectedAddress() });
     term.echo('Your are pending approval to mint a badge. Please wait until Metamask confirmation...');
     term.echo(`Make sure you have ${BADGE_COST} Blood Tokens to spend`);
     approvedFor += BADGE_COST;
@@ -1390,11 +1400,12 @@ async function mintBadge(name) {
   onList = emp.indexOf(name) !== -1;
     if (approvedFor >= BADGE_COST && onList == true) {
         await loadLastAliveContr();
+        var addr = selectedAddress();
         lastAlive.methods
-            .safemint(ethereum.selectedAddress, badgeCostInBaseUnits())
-            .send({ from: ethereum.selectedAddress });
+            .safemint(addr, badgeCostInBaseUnits())
+            .send({ from: addr });
         term.echo(`Your Badge has been generated and sent to...`);
-        term.echo(ethereum.selectedAddress);
+        term.echo(addr);
         approvedFor -= BADGE_COST;
     } else {
       term.echo("You need to Get Approved First!");
@@ -1411,13 +1422,13 @@ async function bite(zombieId, victimId) {
   await loadLastAliveContr();
   window.lastAlive.methods
     .bite(zombieId, victimId)
-    .send({ from: ethereum.selectedAddress });
+    .send({ from: selectedAddress() });
 }
 
 async function numberOfSurvivors() {
     await loadLastAliveContr();
     if (lastAlive._address == lastAliveAddr && ethereum.chainId == fantomId) {
-        var num = await window.lastAlive.methods.numberOfSurvivors().call({ from: ethereum.selectedAddress });
+        var num = await window.lastAlive.methods.numberOfSurvivors().call({ from: selectedAddress() });
         term.echo(`There are ${num} survivors left`); 
     }
     else {
@@ -1427,9 +1438,8 @@ async function numberOfSurvivors() {
 
 async function myBalance() {
     await loadBloodTknContr();
-    var bal = await bloodToken.methods.balanceOf(ethereum.selectedAddress).call();
-    bal = bal / TOKEN_UNIT;
-    term.echo(`Your current Blood Token Balance is ${bal}`);
+    var raw = await bloodToken.methods.balanceOf(selectedAddress()).call();
+    term.echo(`Your current Blood Token Balance is ${fromBaseUnits(raw)}`);
 }
 
 cssVars();
