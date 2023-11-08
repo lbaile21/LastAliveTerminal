@@ -112,10 +112,8 @@ async function toonifyImage(imagePath) {
     validateImagePath(imagePath);
 
     const stream = fs.createReadStream(imagePath, { highWaterMark: 1024 * 256 });
-    let settled = false;
     const streamError = new Promise((_, reject) => {
         stream.once('error', (err) => {
-            settled = true;
             reject(new Error(`Failed to read image '${imagePath}': ${err.message}`));
         });
     });
@@ -125,7 +123,6 @@ async function toonifyImage(imagePath) {
             streamError,
         ]);
     } finally {
-        settled = true;
         if (typeof stream.destroy === 'function' && !stream.destroyed) {
             stream.destroy();
         }
@@ -135,6 +132,8 @@ async function toonifyImage(imagePath) {
 async function main() {
     const inputPath = process.argv[2];
     if (!inputPath || inputPath === '-h' || inputPath === '--help') {
+        // Help text goes to stdout when explicitly requested, stderr otherwise,
+        // so screen readers and pipelines get a consistent exit/stream contract.
         const out = inputPath ? console.log : console.error;
         out('Usage: node node.js <path-to-image>');
         out(`Supported extensions: ${SUPPORTED_EXTENSIONS.join(', ')}`);
