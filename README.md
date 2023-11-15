@@ -74,6 +74,7 @@ workflow:
 - The Accessibility panel in Firefox or Chrome DevTools for inspecting the
   accessibility tree and computed roles.
 - [Pa11y](https://pa11y.org/) for scripted command-line audits in CI.
+- [WAVE](https://wave.webaim.org/) for quick in-page visual audits.
 
 ### Reporting Issues
 
