@@ -44,6 +44,8 @@ Before opening a pull request, please verify the following:
   inline passages in another language with their own `lang` attribute.
 - **Link text.** Use descriptive link text; avoid bare "click here" or
   "read more" phrasing that loses meaning out of context.
+- **Touch targets.** Size interactive controls to at least 24×24 CSS
+  pixels (WCAG 2.2) and leave adequate spacing between adjacent targets.
 
 ### Testing
 
@@ -60,6 +62,8 @@ At minimum, exercise changes with:
    visible when user color overrides are active.
 6. Text spacing overrides (line height 1.5×, paragraph spacing 2×) to
    confirm content does not clip or overlap.
+7. Pointer alternatives: verify any drag, swipe, or multi-point gesture
+   has a single-pointer equivalent (WCAG 2.5.1).
 
 Automated tools catch only a fraction of issues (commonly cited estimates
 put it around 30–40%), so manual verification remains important.
@@ -84,6 +88,8 @@ us reproduce and prioritize, please include:
 - Steps to reproduce, including the page or component involved.
 - The assistive technology and browser/OS versions used, if applicable.
 - The expected versus actual behavior.
+- Any relevant user preferences (reduced motion, forced colors, custom
+  text spacing, or zoom level) active at the time.
 
 Issues tagged `a11y` are treated with the same priority as functional bugs.
 
