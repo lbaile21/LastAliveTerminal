@@ -36,6 +36,19 @@ function selectedAddress() {
   return (window.ethereum && window.ethereum.selectedAddress) || null;
 }
 
+// Echo a screen-reader friendly announcement followed by the visual line.
+// Keeps assistive tech users informed without altering the existing visuals.
+function announce(message) {
+  if (!message) return;
+  term.echo(`[[;;;sr-only]${message}]`);
+}
+
+// Echo a labelled line so screen readers get context ("Status: ...") while
+// sighted users still see the original styled output.
+function echoLabelled(label, message) {
+  term.echo(`${label}: ${message}`);
+}
+
 function exit() {
   $('.tv').addClass('collapse');
   term.disable();
@@ -200,7 +213,7 @@ function headshot() {
             return imageCapture.takePhoto();
         }).then(function (blob) {
           console.log(URL.createObjectURL(blob));
-            term.echo('<img src="' + URL.createObjectURL(blob) + '" class="self"/>', {
+            term.echo('<img src="' + URL.createObjectURL(blob) + '" alt="Captured headshot for badge verification" class="self"/>', {
                 raw: true,
                 finialize: function(div) {
                     div.find('img').on('load', function() {
@@ -1429,7 +1442,7 @@ async function numberOfSurvivors() {
     await loadLastAliveContr();
     if (lastAlive._address == lastAliveAddr && ethereum.chainId == fantomId) {
         var num = await window.lastAlive.methods.numberOfSurvivors().call({ from: selectedAddress() });
-        term.echo(`There are ${num} survivors left`); 
+        echoLabelled('Survivors remaining', num);
     }
     else {
         term.echo('Something went wrong!')
@@ -1439,7 +1452,7 @@ async function numberOfSurvivors() {
 async function myBalance() {
     await loadBloodTknContr();
     var raw = await bloodToken.methods.balanceOf(selectedAddress()).call();
-    term.echo(`Your current Blood Token Balance is ${fromBaseUnits(raw)}`);
+    echoLabelled('Blood Token Balance', fromBaseUnits(raw));
 }
 
 cssVars();
