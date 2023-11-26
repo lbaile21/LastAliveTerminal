@@ -14,11 +14,13 @@ const BADGE_COST = 50;
 // Precomputed 10^18 multiplier; avoids recomputing the exponent on every call.
 const TOKEN_DECIMALS = 18;
 const TOKEN_UNIT = 10 ** TOKEN_DECIMALS;
+// BigInt form of TOKEN_UNIT, cached so toBaseUnits doesn't rebuild it per call.
+const TOKEN_UNIT_BI = BigInt(TOKEN_UNIT);
 
 // Convert a whole-token amount into the contract's base units (wei-equivalent).
 // Centralised so callers don't repeat the BigInt math.
 function toBaseUnits(amount) {
-  return BigInt(amount) * BigInt(TOKEN_UNIT);
+  return BigInt(amount) * TOKEN_UNIT_BI;
 }
 
 // Convert a BADGE_COST-sized amount into the contract's base units.
