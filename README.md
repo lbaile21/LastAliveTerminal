@@ -31,7 +31,8 @@ Before opening a pull request, please verify the following:
 - **Keyboard support.** Ensure interactive elements are reachable in a
   logical tab order and expose visible focus states.
 - **Color and contrast.** Maintain contrast ratios meeting WCAG AA or
-  better; do not rely on color alone to convey meaning.
+  better (4.5:1 for normal text, 3:1 for large text and UI components);
+  do not rely on color alone to convey meaning.
 - **Motion.** Respect `prefers-reduced-motion` and avoid animations that
   could trigger vestibular disorders.
 - **Semantics first.** Prefer native HTML elements; reach for ARIA only
@@ -46,6 +47,8 @@ Before opening a pull request, please verify the following:
   "read more" phrasing that loses meaning out of context.
 - **Touch targets.** Size interactive controls to at least 24×24 CSS
   pixels (WCAG 2.2) and leave adequate spacing between adjacent targets.
+- **Timeouts.** If a session or interaction has a time limit, allow users
+  to extend, adjust, or disable it where feasible (WCAG 2.2.1).
 
 ### Testing
 
@@ -90,6 +93,8 @@ us reproduce and prioritize, please include:
 - The expected versus actual behavior.
 - Any relevant user preferences (reduced motion, forced colors, custom
   text spacing, or zoom level) active at the time.
+- A screenshot or short screen recording when the issue is visual or
+  interaction-based, with any sensitive information redacted.
 
 Issues tagged `a11y` are treated with the same priority as functional bugs.
 
