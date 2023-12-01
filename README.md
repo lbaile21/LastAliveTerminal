@@ -82,6 +82,8 @@ workflow:
   accessibility tree and computed roles.
 - [Pa11y](https://pa11y.org/) for scripted command-line audits in CI.
 - [WAVE](https://wave.webaim.org/) for quick in-page visual audits.
+- [Accessibility Insights](https://accessibilityinsights.io/) for guided
+  manual assessments alongside automated checks.
 
 ### Reporting Issues
 
