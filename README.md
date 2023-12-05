@@ -6,8 +6,11 @@ A lightweight utility focused on fast, predictable performance.
 
 - [Getting Started](#getting-started)
 - [Accessibility](#accessibility)
+  - [Principles](#principles)
   - [Contributor Checklist](#contributor-checklist)
   - [Testing](#testing)
+    - [Manual Checks](#manual-checks)
+    - [Automated Checks](#automated-checks)
   - [Tooling](#tooling)
   - [Reporting Issues](#reporting-issues)
 - [License](#license)
@@ -21,6 +24,20 @@ See the documentation in the `docs/` directory for installation and usage detail
 This project aims to be usable by everyone. Accessibility is treated as a
 first-class concern rather than an afterthought; the guidelines below apply
 to both code contributions and documentation changes.
+
+### Principles
+
+A few ideas inform the more specific guidance that follows:
+
+- **Semantics over decoration.** The accessibility tree is the source of
+  truth; visual styling should reinforce it, not replace it.
+- **Progressive enhancement.** Core functionality should work without
+  JavaScript, custom controls, or pointer input wherever practical.
+- **User preferences are inputs.** Reduced motion, forced colors, text
+  spacing overrides, and zoom level are signals to respect, not bugs to
+  paper over.
+- **Parity, not separate paths.** Avoid "accessible alternatives" that
+  diverge from the main experience; fix the main experience instead.
 
 ### Contributor Checklist
 
@@ -52,24 +69,35 @@ Before opening a pull request, please verify the following:
 
 ### Testing
 
-At minimum, exercise changes with:
+Testing is split into manual and automated passes. Neither subsumes the
+other: automated tools catch only a fraction of issues (commonly cited
+estimates put it around 30–40%), while manual checks reveal problems that
+static analysis cannot — confusing focus order, awkward screen reader
+phrasing, or gestures with no keyboard equivalent.
+
+#### Manual Checks
 
 1. Keyboard-only navigation (no mouse or trackpad). Confirm that focus
    never becomes trapped and that the visible focus indicator is always
    discernible against the current background.
 2. One screen reader — NVDA, JAWS, VoiceOver, TalkBack, or Orca.
-3. An automated checker such as axe or Lighthouse for obvious regressions.
-4. Page zoom at 200% to confirm the layout reflows without loss of content
+3. Page zoom at 200% to confirm the layout reflows without loss of content
    or functionality, including any sticky headers or off-canvas menus.
-5. Forced-colors / high-contrast mode to confirm essential UI remains
+4. Forced-colors / high-contrast mode to confirm essential UI remains
    visible when user color overrides are active.
-6. Text spacing overrides (line height 1.5×, paragraph spacing 2×) to
+5. Text spacing overrides (line height 1.5×, paragraph spacing 2×) to
    confirm content does not clip or overlap.
-7. Pointer alternatives: verify any drag, swipe, or multi-point gesture
+6. Pointer alternatives: verify any drag, swipe, or multi-point gesture
    has a single-pointer equivalent (WCAG 2.5.1).
 
-Automated tools catch only a fraction of issues (commonly cited estimates
-put it around 30–40%), so manual verification remains important.
+#### Automated Checks
+
+- Run axe or Lighthouse against changed pages and triage any new
+  violations before requesting review.
+- Where practical, add a Pa11y or axe-core assertion to CI for pages or
+  components that have regressed in the past.
+- Treat "needs review" findings as findings: investigate them rather than
+  filtering them out of reports.
 
 ### Tooling
 
