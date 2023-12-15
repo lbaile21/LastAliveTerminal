@@ -131,14 +131,15 @@ async function toonifyImage(imagePath) {
 
 async function main() {
     const inputPath = process.argv[2];
-    if (!inputPath || inputPath === '-h' || inputPath === '--help') {
+    const askedForHelp = inputPath === '-h' || inputPath === '--help';
+    if (!inputPath || askedForHelp) {
         // Help text goes to stdout when explicitly requested, stderr otherwise,
         // so screen readers and pipelines get a consistent exit/stream contract.
-        const out = inputPath ? console.log : console.error;
+        const out = askedForHelp ? console.log : console.error;
         out('Usage: node node.js <path-to-image>');
         out(`Supported extensions: ${SUPPORTED_EXTENSIONS.join(', ')}`);
         out(`Maximum image size: ${formatBytes(MAX_IMAGE_BYTES)}`);
-        process.exitCode = inputPath ? 0 : 1;
+        process.exitCode = askedForHelp ? 0 : 1;
         return;
     }
     try {
