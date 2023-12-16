@@ -38,6 +38,11 @@ function selectedAddress() {
   return (window.ethereum && window.ethereum.selectedAddress) || null;
 }
 
+// True when the connected wallet is on the expected Fantom network.
+function isOnFantom() {
+  return !!(window.ethereum && window.ethereum.chainId === fantomId);
+}
+
 // Echo a screen-reader friendly announcement followed by the visual line.
 // Keeps assistive tech users informed without altering the existing visuals.
 function announce(message) {
@@ -505,7 +510,7 @@ async function loadWeb3() {
         term.echo(`You are connected to Web3 via ${ethereum.selectedAddress}`);
         window.web3 = new Web3(window.ethereum);
         window.ethereum.enable();
-        if (ethereum.chainId != fantomId) {
+        if (!isOnFantom()) {
             term.echo("Please switch to the Fantom Network!");
             term.echo("                                                         ");
             term.echo("  █████▒▄▄▄       ███▄    █ ▄▄▄█████▓ ▒█████   ███▄ ▄███▓");
@@ -1442,7 +1447,7 @@ async function bite(zombieId, victimId) {
 
 async function numberOfSurvivors() {
     await loadLastAliveContr();
-    if (lastAlive._address == lastAliveAddr && ethereum.chainId == fantomId) {
+    if (lastAlive._address == lastAliveAddr && isOnFantom()) {
         var num = await window.lastAlive.methods.numberOfSurvivors().call({ from: selectedAddress() });
         echoLabelled('Survivors remaining', num);
     }
