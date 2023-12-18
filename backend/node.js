@@ -22,6 +22,19 @@ function resolveMaxImageBytes() {
 }
 const MAX_IMAGE_BYTES = resolveMaxImageBytes();
 
+// Default request timeout for the remote toonify call. Overridable via
+// TOONIFY_TIMEOUT_MS so CI environments can tighten or loosen it without
+// code changes.
+const DEFAULT_REQUEST_TIMEOUT_MS = 120 * 1000;
+function resolveRequestTimeoutMs() {
+    const raw = process.env.TOONIFY_TIMEOUT_MS;
+    if (raw === undefined || raw === '') return DEFAULT_REQUEST_TIMEOUT_MS;
+    const parsed = Number(raw);
+    if (!Number.isFinite(parsed) || parsed <= 0) return DEFAULT_REQUEST_TIMEOUT_MS;
+    return Math.floor(parsed);
+}
+const REQUEST_TIMEOUT_MS = resolveRequestTimeoutMs();
+
 deepai.setApiKey(API_KEY);
 
 /**
@@ -67,6 +80,30 @@ function logStatus(level, message) {
 }
 
 /**
+ * Return a Promise that rejects after `ms` milliseconds with a
+ * timeout error tagged by `label`. The returned object also exposes a
+ * `cancel()` method so callers can clear the underlying timer once
+ * the racing work has resolved.
+ */
+function createTimeout(ms, label) {
+    let timer;
+    const promise = new Promise((_, reject) => {
+        timer = setTimeout(() => {
+            const err = new Error(`${label} timed out after ${formatDuration(ms)}`);
+            err.code = 'ETIMEDOUT';
+            reject(err);
+        }, ms);
+        if (typeof timer.unref === 'function') timer.unref();
+    });
+    return {
+        promise,
+        cancel() {
+            if (timer) clearTimeout(timer);
+        },
+    };
+}
+
+/**
  * Validate that the provided path points to a readable image file
  * with a supported extension and a reasonable size. Throws a
  * descriptive error message on failure.
@@ -106,10 +143,14 @@ function validateImagePath(imagePath) {
 /**
  * Send an image to the DeepAI toonify endpoint and return the response.
  * Uses a buffered high-water mark on the read stream to reduce syscall
- * overhead for typical image sizes.
+ * overhead for typical image sizes, and enforces a configurable
+ * overall request timeout.
  */
-async function toonifyImage(imagePath) {
+async function toonifyImage(imagePath, options) {
     validateImagePath(imagePath);
+    const timeoutMs = (options && Number.isFinite(options.timeoutMs) && options.timeoutMs > 0)
+        ? Math.floor(options.timeoutMs)
+        : REQUEST_TIMEOUT_MS;
 
     const stream = fs.createReadStream(imagePath, { highWaterMark: 1024 * 256 });
     const streamError = new Promise((_, reject) => {
@@ -117,12 +158,15 @@ async function toonifyImage(imagePath) {
             reject(new Error(`Failed to read image '${imagePath}': ${err.message}`));
         });
     });
+    const timeout = createTimeout(timeoutMs, 'toonify request');
     try {
         return await Promise.race([
             deepai.callStandardApi('toonify', { image: stream }),
             streamError,
+            timeout.promise,
         ]);
     } finally {
+        timeout.cancel();
         if (typeof stream.destroy === 'function' && !stream.destroyed) {
             stream.destroy();
         }
@@ -139,6 +183,7 @@ async function main() {
         out('Usage: node node.js <path-to-image>');
         out(`Supported extensions: ${SUPPORTED_EXTENSIONS.join(', ')}`);
         out(`Maximum image size: ${formatBytes(MAX_IMAGE_BYTES)}`);
+        out(`Request timeout: ${formatDuration(REQUEST_TIMEOUT_MS)}`);
         process.exitCode = askedForHelp ? 0 : 1;
         return;
     }
@@ -158,4 +203,4 @@ if (require.main === module) {
     main();
 }
 
-module.exports = { toonifyImage, validateImagePath, formatBytes, formatDuration, logStatus, SUPPORTED_EXTENSIONS, MAX_IMAGE_BYTES };
+module.exports = { toonifyImage, validateImagePath, formatBytes, formatDuration, logStatus, createTimeout, SUPPORTED_EXTENSIONS, MAX_IMAGE_BYTES, REQUEST_TIMEOUT_MS };
