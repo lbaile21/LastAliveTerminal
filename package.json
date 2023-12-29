@@ -41,6 +41,8 @@
     "clearMocks": true,
     "resetMocks": true,
     "restoreMocks": true,
+    "cache": true,
+    "maxWorkers": "50%",
     "collectCoverageFrom": [
       "**/*.js",
       "!**/node_modules/**",
