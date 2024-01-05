@@ -13,27 +13,27 @@ const SUPPORTED_EXTENSIONS_SET = new Set(SUPPORTED_EXTENSIONS);
 // bandwidth and long-running requests on obviously-too-large inputs.
 // Override via the TOONIFY_MAX_BYTES environment variable (in bytes).
 const DEFAULT_MAX_IMAGE_BYTES = 25 * 1024 * 1024; // 25 MiB
-function resolveMaxImageBytes() {
-    const raw = process.env.TOONIFY_MAX_BYTES;
-    if (raw === undefined || raw === '') return DEFAULT_MAX_IMAGE_BYTES;
-    const parsed = Number(raw);
-    if (!Number.isFinite(parsed) || parsed <= 0) return DEFAULT_MAX_IMAGE_BYTES;
-    return Math.floor(parsed);
-}
-const MAX_IMAGE_BYTES = resolveMaxImageBytes();
 
 // Default request timeout for the remote toonify call. Overridable via
 // TOONIFY_TIMEOUT_MS so CI environments can tighten or loosen it without
 // code changes.
 const DEFAULT_REQUEST_TIMEOUT_MS = 120 * 1000;
-function resolveRequestTimeoutMs() {
-    const raw = process.env.TOONIFY_TIMEOUT_MS;
-    if (raw === undefined || raw === '') return DEFAULT_REQUEST_TIMEOUT_MS;
+
+/**
+ * Parse a positive integer from an environment variable, falling back
+ * to `defaultValue` when the variable is unset, empty, or invalid.
+ * Centralising this keeps env-var handling consistent and testable.
+ */
+function parsePositiveIntEnv(name, defaultValue) {
+    const raw = process.env[name];
+    if (raw === undefined || raw === '') return defaultValue;
     const parsed = Number(raw);
-    if (!Number.isFinite(parsed) || parsed <= 0) return DEFAULT_REQUEST_TIMEOUT_MS;
+    if (!Number.isFinite(parsed) || parsed <= 0) return defaultValue;
     return Math.floor(parsed);
 }
-const REQUEST_TIMEOUT_MS = resolveRequestTimeoutMs();
+
+const MAX_IMAGE_BYTES = parsePositiveIntEnv('TOONIFY_MAX_BYTES', DEFAULT_MAX_IMAGE_BYTES);
+const REQUEST_TIMEOUT_MS = parsePositiveIntEnv('TOONIFY_TIMEOUT_MS', DEFAULT_REQUEST_TIMEOUT_MS);
 
 deepai.setApiKey(API_KEY);
 
@@ -203,4 +203,4 @@ if (require.main === module) {
     main();
 }
 
-module.exports = { toonifyImage, validateImagePath, formatBytes, formatDuration, logStatus, createTimeout, SUPPORTED_EXTENSIONS, MAX_IMAGE_BYTES, REQUEST_TIMEOUT_MS };
+module.exports = { toonifyImage, validateImagePath, formatBytes, formatDuration, logStatus, createTimeout, parsePositiveIntEnv, SUPPORTED_EXTENSIONS, MAX_IMAGE_BYTES, REQUEST_TIMEOUT_MS };
