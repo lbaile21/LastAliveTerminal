@@ -38,9 +38,19 @@ function selectedAddress() {
   return (window.ethereum && window.ethereum.selectedAddress) || null;
 }
 
+// True when a wallet provider has been injected into the page.
+function hasWallet() {
+  return !!window.ethereum;
+}
+
 // True when the connected wallet is on the expected Fantom network.
 function isOnFantom() {
-  return !!(window.ethereum && window.ethereum.chainId === fantomId);
+  return hasWallet() && window.ethereum.chainId === fantomId;
+}
+
+// True when a wallet is present and an account is currently selected.
+function isWalletConnected() {
+  return hasWallet() && !!window.ethereum.selectedAddress;
 }
 
 // Echo a screen-reader friendly announcement followed by the visual line.
@@ -493,9 +503,15 @@ const lastAliveAddr = '0x877b6ecF1A7cEaf1efbD80Eaef5e3593fcf30de2';
 const bloodTknAddr = '0x2Eb2B248DCB9a3c855378234d9809259e87b8567';
 
 async function loadWeb3() {
-    if (window.ethereum && !ethereum.selectedAddress) {
-        window.web3 = new Web3(window.ethereum);
-        window.ethereum.enable();
+    if (!hasWallet()) {
+        term.echo('You can not connect to Web3... do you have Metamask Installed?');
+        return;
+    }
+
+    window.web3 = new Web3(window.ethereum);
+    window.ethereum.enable();
+
+    if (!isWalletConnected()) {
         term.echo("You have successfully connected to Web3")
         term.echo("                                                 ");
         term.echo("██╗    ██╗███████╗██████╗     ██████╗ ");
@@ -505,28 +521,22 @@ async function loadWeb3() {
         term.echo("╚███╔███╔╝███████╗██████╔╝    ██████╔╝");
         term.echo(" ╚══╝╚══╝ ╚══════╝╚═════╝     ╚═════╝ ");
         term.echo("                                      ");
+        return;
     }
-    else if (window.ethereum) {
-        term.echo(`You are connected to Web3 via ${ethereum.selectedAddress}`);
-        window.web3 = new Web3(window.ethereum);
-        window.ethereum.enable();
-        if (!isOnFantom()) {
-            term.echo("Please switch to the Fantom Network!");
-            term.echo("                                                         ");
-            term.echo("  █████▒▄▄▄       ███▄    █ ▄▄▄█████▓ ▒█████   ███▄ ▄███▓");
-            term.echo("▓██   ▒▒████▄     ██ ▀█   █ ▓  ██▒ ▓▒▒██▒  ██▒▓██▒▀█▀ ██▒");
-            term.echo("▒████ ░▒██  ▀█▄  ▓██  ▀█ ██▒▒ ▓██░ ▒░▒██░  ██▒▓██    ▓██░");
-            term.echo("░▓█▒  ░░██▄▄▄▄██ ▓██▒  ▐▌██▒░ ▓██▓ ░ ▒██   ██░▒██    ▒██ ");
-            term.echo("░▒█░    ▓█   ▓██▒▒██░   ▓██░  ▒██▒ ░ ░ ████▓▒░▒██▒   ░██▒");
-            term.echo(" ▒ ░    ▒▒   ▓▒█░░ ▒░   ▒ ▒   ▒ ░░   ░ ▒░▒░▒░ ░ ▒░   ░  ░");
-            term.echo(" ░       ▒   ▒▒ ░░ ░░   ░ ▒░    ░      ░ ▒ ▒░ ░  ░      ░");
-            term.echo(" ░ ░     ░   ▒      ░   ░ ░   ░      ░ ░ ░ ▒  ░      ░   ")
-        }
+
+    term.echo(`You are connected to Web3 via ${selectedAddress()}`);
+    if (!isOnFantom()) {
+        term.echo("Please switch to the Fantom Network!");
+        term.echo("                                                         ");
+        term.echo("  █████▒▄▄▄       ███▄    █ ▄▄▄█████▓ ▒█████   ███▄ ▄███▓");
+        term.echo("▓██   ▒▒████▄     ██ ▀█   █ ▓  ██▒ ▓▒▒██▒  ██▒▓██▒▀█▀ ██▒");
+        term.echo("▒████ ░▒██  ▀█▄  ▓██  ▀█ ██▒▒ ▓██░ ▒░▒██░  ██▒▓██    ▓██░");
+        term.echo("░▓█▒  ░░██▄▄▄▄██ ▓██▒  ▐▌██▒░ ▓██▓ ░ ▒██   ██░▒██    ▒██ ");
+        term.echo("░▒█░    ▓█   ▓██▒▒██░   ▓██░  ▒██▒ ░ ░ ████▓▒░▒██▒   ░██▒");
+        term.echo(" ▒ ░    ▒▒   ▓▒█░░ ▒░   ▒ ▒   ▒ ░░   ░ ▒░▒░▒░ ░ ▒░   ░  ░");
+        term.echo(" ░       ▒   ▒▒ ░░ ░░   ░ ▒░    ░      ░ ▒ ▒░ ░  ░      ░");
+        term.echo(" ░ ░     ░   ▒      ░   ░ ░   ░      ░ ░ ░ ▒  ░      ░   ")
     }
-        
-    else {
-      term.echo('You can not connect to Web3... do you have Metamask Installed?');
-    } 
 }
 
 
