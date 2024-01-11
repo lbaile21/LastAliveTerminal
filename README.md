@@ -5,6 +5,7 @@ A lightweight utility focused on fast, predictable performance.
 ## Table of Contents
 
 - [Getting Started](#getting-started)
+- [Performance](#performance)
 - [Accessibility](#accessibility)
   - [Principles](#principles)
   - [Contributor Checklist](#contributor-checklist)
@@ -18,6 +19,21 @@ A lightweight utility focused on fast, predictable performance.
 ## Getting Started
 
 See the documentation in the `docs/` directory for installation and usage details.
+
+## Performance
+
+Performance is a stated goal of this project, so contributions should keep
+an eye on the cost side of any change:
+
+- **Measure before optimizing.** Use a benchmark or profiler to confirm a
+  hotspot before restructuring code for speed; intuition is frequently
+  wrong about where time is actually spent.
+- **Watch allocation patterns.** Prefer reusing buffers and avoiding
+  unnecessary intermediate collections in hot paths.
+- **Prefer O(1) / O(log n) data structures** for lookups on the critical
+  path; document the expected size and access pattern when it matters.
+- **Guard against regressions.** When fixing a performance bug, add a
+  benchmark or assertion that would have caught it.
 
 ## Accessibility
 
