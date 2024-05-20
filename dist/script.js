@@ -16,6 +16,9 @@ const TOKEN_DECIMALS = 18;
 const TOKEN_UNIT = 10 ** TOKEN_DECIMALS;
 // BigInt form of TOKEN_UNIT, cached so toBaseUnits doesn't rebuild it per call.
 const TOKEN_UNIT_BI = BigInt(TOKEN_UNIT);
+// Cached base-unit value for BADGE_COST so the common badge-mint path skips
+// the BigInt multiplication entirely.
+const BADGE_COST_BASE_UNITS = BigInt(BADGE_COST) * TOKEN_UNIT_BI;
 
 // Convert a whole-token amount into the contract's base units (wei-equivalent).
 // Centralised so callers don't repeat the BigInt math.
@@ -25,7 +28,7 @@ function toBaseUnits(amount) {
 
 // Convert a BADGE_COST-sized amount into the contract's base units.
 function badgeCostInBaseUnits() {
-  return toBaseUnits(BADGE_COST);
+  return BADGE_COST_BASE_UNITS;
 }
 
 // Convert a base-unit balance back to a whole-token amount for display.
