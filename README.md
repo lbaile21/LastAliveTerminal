@@ -32,6 +32,9 @@ an eye on the cost side of any change:
   unnecessary intermediate collections in hot paths.
 - **Prefer O(1) / O(log n) data structures** for lookups on the critical
   path; document the expected size and access pattern when it matters.
+- **Mind the constant factors.** Big-O is a ceiling, not a promise; cache
+  locality, branch prediction, and syscall overhead often dominate at the
+  sizes this project actually sees.
 - **Guard against regressions.** When fixing a performance bug, add a
   benchmark or assertion that would have caught it.
 
