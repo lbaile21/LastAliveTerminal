@@ -6,6 +6,8 @@ A lightweight utility focused on fast, predictable performance.
 
 - [Getting Started](#getting-started)
 - [Performance](#performance)
+  - [Guidelines](#guidelines)
+  - [Benchmarking](#benchmarking)
 - [Accessibility](#accessibility)
   - [Principles](#principles)
   - [Contributor Checklist](#contributor-checklist)
@@ -23,7 +25,9 @@ See the documentation in the `docs/` directory for installation and usage detail
 ## Performance
 
 Performance is a stated goal of this project, so contributions should keep
-an eye on the cost side of any change:
+an eye on the cost side of any change.
+
+### Guidelines
 
 - **Measure before optimizing.** Use a benchmark or profiler to confirm a
   hotspot before restructuring code for speed; intuition is frequently
@@ -37,6 +41,20 @@ an eye on the cost side of any change:
   sizes this project actually sees.
 - **Guard against regressions.** When fixing a performance bug, add a
   benchmark or assertion that would have caught it.
+
+### Benchmarking
+
+When submitting a performance-sensitive change, include before/after
+numbers from a repeatable benchmark. A useful report typically contains:
+
+- The hardware, OS, and runtime version used.
+- The input size or workload shape, ideally representative of real usage.
+- Wall-clock time and, where relevant, allocation counts or peak memory.
+- Multiple runs (at least 5) with a measure of variance, not just a
+  single best-case number.
+
+Microbenchmarks are useful for isolating a change, but confirm the win
+shows up in an end-to-end scenario before claiming a speedup.
 
 ## Accessibility
 
