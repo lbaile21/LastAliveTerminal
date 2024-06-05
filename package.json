@@ -17,16 +17,21 @@
     "test:unit": "jest --testPathPattern=__tests__/unit",
     "test:integration": "jest --testPathPattern=__tests__/integration",
     "test:a11y": "jest --testPathPattern=__tests__/a11y",
+    "test:changed": "jest --onlyChanged",
     "a11y": "pa11y-ci",
     "a11y:axe": "axe ./public --exit",
     "a11y:report": "pa11y-ci --reporter html > a11y-report.html",
     "pretest": "npm run lint",
-    "check": "npm run lint && npm run format:check && npm test",
+    "verify": "npm run lint && npm run format:check",
+    "verify:full": "npm run verify && npm test",
+    "check": "npm run verify:full",
     "check:fix": "npm run lint:fix && npm run format && npm test",
     "check:a11y": "npm run a11y && npm run test:a11y",
     "clean": "rimraf coverage node_modules/.cache",
+    "clean:all": "rimraf coverage node_modules/.cache a11y-report.html",
     "audit": "npm audit --audit-level=moderate",
-    "audit:fix": "npm audit fix"
+    "audit:fix": "npm audit fix",
+    "prepublishOnly": "npm run check"
   },
   "dependencies": {
     "dotenv": "^16.0.3",
