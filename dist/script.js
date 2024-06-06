@@ -86,6 +86,11 @@ var CALLABLE_COMMANDS = [
 // O(1) lookup set built once from the list above.
 var CALLABLE_COMMANDS_SET = new Set(CALLABLE_COMMANDS);
 
+// True when the given command name must be invoked with parentheses.
+function isCallableCommand(name) {
+  return CALLABLE_COMMANDS_SET.has(name);
+}
+
 var term = $('#terminal').terminal(
     function (command, term) {
     var cmd = $.terminal.parse_command(command);
@@ -103,7 +108,7 @@ var term = $('#terminal').terminal(
         login = true;
     } 
         
-    else if (CALLABLE_COMMANDS_SET.has(cmd.name)) {
+    else if (isCallableCommand(cmd.name)) {
         term.echo("Make sure to use () after your command to execute!");
         }   
       else if (cmd.name === 'exit') {
