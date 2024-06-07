@@ -52,6 +52,8 @@ numbers from a repeatable benchmark. A useful report typically contains:
 - Wall-clock time and, where relevant, allocation counts or peak memory.
 - Multiple runs (at least 5) with a measure of variance (e.g. standard
   deviation or min/median/max), not just a single best-case number.
+- The build configuration (release/optimized, not debug) and whether
+  CPU frequency scaling or turbo boost was pinned during the run.
 
 Microbenchmarks are useful for isolating a change, but confirm the win
 shows up in an end-to-end scenario before claiming a speedup.
