@@ -8,6 +8,7 @@ let login = false;
 let loginName = false;
 let onList = false;
 let approvedFor = 0;
+// Fantom Opera chain id in hex form, as reported by window.ethereum.chainId.
 const fantomId = '0x61';
 // Cost in Blood Tokens required to mint a survival badge.
 const BADGE_COST = 50;
