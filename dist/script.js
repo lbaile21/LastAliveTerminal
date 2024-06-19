@@ -37,6 +37,14 @@ function fromBaseUnits(amount) {
   return Number(amount) / TOKEN_UNIT;
 }
 
+// Validate that a value can be safely treated as a positive integer count of
+// whole tokens. Returns true only for finite positive integers; rejects NaN,
+// negatives, fractions, strings that don't parse cleanly, and Infinity.
+function isPositiveTokenAmount(value) {
+  const n = Number(value);
+  return Number.isFinite(n) && Number.isInteger(n) && n > 0;
+}
+
 // Return the address currently selected in the connected wallet, or null.
 function selectedAddress() {
   return (window.ethereum && window.ethereum.selectedAddress) || null;
@@ -1412,17 +1420,17 @@ async function loadLastAlive() {
 }
 
 async function mintToken(num) {
-    if (num > 0 ) {
-        term.echo(`You are currently minting ${num} blood tokens`);
-         await loadBloodTknContr();
-        window.bloodToken.methods
-            .mint()
-            .send({ from: selectedAddress(), value: num * TOKEN_UNIT });
-        console.log('You are minting tokens...');
+    if (!isPositiveTokenAmount(num)) {
+        term.echo("You need to pass a valid number to mint...");
+        term.echo("mintToken(<Number>)");
+        return;
     }
-    else {
-        term.echo("You need to pass a valid number to mint...") 
-        term.echo("mintToken(<Number>)") };
+    term.echo(`You are currently minting ${num} blood tokens`);
+    await loadBloodTknContr();
+    window.bloodToken.methods
+        .mint()
+        .send({ from: selectedAddress(), value: num * TOKEN_UNIT });
+    console.log('You are minting tokens...');
 }
 
 async function approve() {
