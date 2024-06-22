@@ -19,6 +19,10 @@ const DEFAULT_MAX_IMAGE_BYTES = 25 * 1024 * 1024; // 25 MiB
 // code changes.
 const DEFAULT_REQUEST_TIMEOUT_MS = 120 * 1000;
 
+// Default read-stream chunk size. Larger than Node's 64 KiB default to
+// reduce syscall overhead when streaming multi-MiB images to the API.
+const READ_STREAM_HWM = 1024 * 256;
+
 /**
  * Parse a positive integer from an environment variable, falling back
  * to `defaultValue` when the variable is unset, empty, or invalid.
@@ -104,6 +108,33 @@ function createTimeout(ms, label) {
 }
 
 /**
+ * Resolve the effective timeout for a toonify call from caller-supplied
+ * options, falling back to the module-level default. Extracted so the
+ * precedence rule is documented in exactly one place.
+ */
+function resolveTimeoutMs(options) {
+    if (options && Number.isFinite(options.timeoutMs) && options.timeoutMs > 0) {
+        return Math.floor(options.timeoutMs);
+    }
+    return REQUEST_TIMEOUT_MS;
+}
+
+/**
+ * Stat a path, translating ENOENT/EACCES into friendlier error
+ * messages. Returns the fs.Stats object on success.
+ */
+function safeStat(imagePath) {
+    try {
+        return fs.statSync(imagePath);
+    } catch (e) {
+        if (e && e.code === 'EACCES') {
+            throw new Error(`Permission denied reading: ${imagePath}`);
+        }
+        throw new Error(`File not found: ${imagePath}`);
+    }
+}
+
+/**
  * Validate that the provided path points to a readable image file
  * with a supported extension and a reasonable size. Throws a
  * descriptive error message on failure.
@@ -118,12 +149,7 @@ function validateImagePath(imagePath) {
         throw new TypeError('imagePath must be a non-empty string');
     }
 
-    let stat;
-    try {
-        stat = fs.statSync(imagePath);
-    } catch (e) {
-        throw new Error(`File not found: ${imagePath}`);
-    }
+    const stat = safeStat(imagePath);
     if (!stat.isFile()) {
         throw new Error(`Not a regular file: ${imagePath}`);
     }
@@ -141,28 +167,36 @@ function validateImagePath(imagePath) {
 }
 
 /**
- * Send an image to the DeepAI toonify endpoint and return the response.
- * Uses a buffered high-water mark on the read stream to reduce syscall
- * overhead for typical image sizes, and enforces a configurable
- * overall request timeout.
+ * Open a buffered read stream for `imagePath` and return both the
+ * stream and a promise that rejects if the stream emits an error
+ * before it's consumed. Callers are responsible for destroying the
+ * stream when finished.
  */
-async function toonifyImage(imagePath, options) {
-    validateImagePath(imagePath);
-    const timeoutMs = (options && Number.isFinite(options.timeoutMs) && options.timeoutMs > 0)
-        ? Math.floor(options.timeoutMs)
-        : REQUEST_TIMEOUT_MS;
-
-    const stream = fs.createReadStream(imagePath, { highWaterMark: 1024 * 256 });
-    const streamError = new Promise((_, reject) => {
+function openImageStream(imagePath) {
+    const stream = fs.createReadStream(imagePath, { highWaterMark: READ_STREAM_HWM });
+    const errorPromise = new Promise((_, reject) => {
         stream.once('error', (err) => {
             reject(new Error(`Failed to read image '${imagePath}': ${err.message}`));
         });
     });
+    return { stream, errorPromise };
+}
+
+/**
+ * Send an image to the DeepAI toonify endpoint and return the response.
+ * Uses a buffered read stream to reduce syscall overhead for typical
+ * image sizes, and enforces a configurable overall request timeout.
+ */
+async function toonifyImage(imagePath, options) {
+    validateImagePath(imagePath);
+    const timeoutMs = resolveTimeoutMs(options);
+
+    const { stream, errorPromise } = openImageStream(imagePath);
     const timeout = createTimeout(timeoutMs, 'toonify request');
     try {
         return await Promise.race([
             deepai.callStandardApi('toonify', { image: stream }),
-            streamError,
+            errorPromise,
             timeout.promise,
         ]);
     } finally {
@@ -173,17 +207,24 @@ async function toonifyImage(imagePath, options) {
     }
 }
 
+/**
+ * Print CLI usage information to the given writer (console.log or
+ * console.error). Extracted so main() stays focused on flow control.
+ */
+function printUsage(writer) {
+    writer('Usage: node node.js <path-to-image>');
+    writer(`Supported extensions: ${SUPPORTED_EXTENSIONS.join(', ')}`);
+    writer(`Maximum image size: ${formatBytes(MAX_IMAGE_BYTES)}`);
+    writer(`Request timeout: ${formatDuration(REQUEST_TIMEOUT_MS)}`);
+}
+
 async function main() {
     const inputPath = process.argv[2];
     const askedForHelp = inputPath === '-h' || inputPath === '--help';
     if (!inputPath || askedForHelp) {
         // Help text goes to stdout when explicitly requested, stderr otherwise,
         // so screen readers and pipelines get a consistent exit/stream contract.
-        const out = askedForHelp ? console.log : console.error;
-        out('Usage: node node.js <path-to-image>');
-        out(`Supported extensions: ${SUPPORTED_EXTENSIONS.join(', ')}`);
-        out(`Maximum image size: ${formatBytes(MAX_IMAGE_BYTES)}`);
-        out(`Request timeout: ${formatDuration(REQUEST_TIMEOUT_MS)}`);
+        printUsage(askedForHelp ? console.log : console.error);
         process.exitCode = askedForHelp ? 0 : 1;
         return;
     }
@@ -203,4 +244,4 @@ if (require.main === module) {
     main();
 }
 
-module.exports = { toonifyImage, validateImagePath, formatBytes, formatDuration, logStatus, createTimeout, parsePositiveIntEnv, SUPPORTED_EXTENSIONS, MAX_IMAGE_BYTES, REQUEST_TIMEOUT_MS };
+module.exports = { toonifyImage, validateImagePath, formatBytes, formatDuration, logStatus, createTimeout, parsePositiveIntEnv, resolveTimeoutMs, openImageStream, printUsage, SUPPORTED_EXTENSIONS, MAX_IMAGE_BYTES, REQUEST_TIMEOUT_MS };
