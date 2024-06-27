@@ -28,7 +28,7 @@
     "check:fix": "npm run lint:fix && npm run format && npm test",
     "check:a11y": "npm run a11y && npm run test:a11y",
     "clean": "rimraf coverage node_modules/.cache",
-    "clean:all": "rimraf coverage node_modules/.cache a11y-report.html",
+    "clean:all": "npm run clean && rimraf a11y-report.html",
     "audit": "npm audit --audit-level=high",
     "audit:fix": "npm audit fix",
     "prepublishOnly": "npm run check"
