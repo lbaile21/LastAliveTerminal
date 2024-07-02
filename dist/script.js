@@ -78,6 +78,17 @@ function echoLabelled(label, message) {
   term.echo(`${label}: ${message}`);
 }
 
+// Echo an error in a way that's perceivable to both sighted users (via the
+// terminal's red error styling) and assistive tech (via an explicit "Error:"
+// prefix announced to screen readers). Centralising this keeps error
+// reporting consistent across the rest of the script.
+function reportError(message) {
+  if (message === undefined || message === null) return;
+  const text = String(message);
+  announce(`Error: ${text}`);
+  term.error(text);
+}
+
 function exit() {
   $('.tv').addClass('collapse');
   term.disable();
@@ -135,7 +146,7 @@ var term = $('#terminal').terminal(
           term.echo(new String(result));
         }
       } catch (e) {
-        term.error(new String(e));
+        reportError(e);
       }
     }
   },
@@ -256,7 +267,7 @@ function headshot() {
                 }
             }).resume();
         }).catch(function(error) {
-          term.error('Device Media Error: ' + error);
+          reportError('Device Media Error: ' + error);
           term.pause();
           clear();
         });
@@ -1479,7 +1490,7 @@ async function numberOfSurvivors() {
         echoLabelled('Survivors remaining', num);
     }
     else {
-        term.echo('Something went wrong!')
+        reportError('Something went wrong!');
     }
 }
 
