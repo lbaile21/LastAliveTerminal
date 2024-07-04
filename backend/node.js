@@ -48,7 +48,7 @@ deepai.setApiKey(API_KEY);
  */
 function formatBytes(bytes) {
     if (!Number.isFinite(bytes) || bytes < 0) return String(bytes);
-    const units = ['B', 'KiB', 'MiB', 'GiB'];
+    const units = ['B', 'KiB', 'MiB', 'GiB', 'TiB'];
     let i = 0;
     let value = bytes;
     while (value >= 1024 && i < units.length - 1) {
