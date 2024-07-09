@@ -167,6 +167,17 @@ function validateImagePath(imagePath) {
 }
 
 /**
+ * Return true if `ext` (with or without a leading dot, any case) is one
+ * of the image extensions this module accepts. Useful for callers that
+ * want to filter candidate paths before invoking validateImagePath().
+ */
+function isSupportedExtension(ext) {
+    if (typeof ext !== 'string' || ext.length === 0) return false;
+    const normalised = (ext.startsWith('.') ? ext : `.${ext}`).toLowerCase();
+    return SUPPORTED_EXTENSIONS_SET.has(normalised);
+}
+
+/**
  * Open a buffered read stream for `imagePath` and return both the
  * stream and a promise that rejects if the stream emits an error
  * before it's consumed. Callers are responsible for destroying the
@@ -244,4 +255,4 @@ if (require.main === module) {
     main();
 }
 
-module.exports = { toonifyImage, validateImagePath, formatBytes, formatDuration, logStatus, createTimeout, parsePositiveIntEnv, resolveTimeoutMs, openImageStream, printUsage, SUPPORTED_EXTENSIONS, MAX_IMAGE_BYTES, REQUEST_TIMEOUT_MS };
+module.exports = { toonifyImage, validateImagePath, isSupportedExtension, formatBytes, formatDuration, logStatus, createTimeout, parsePositiveIntEnv, resolveTimeoutMs, openImageStream, printUsage, SUPPORTED_EXTENSIONS, MAX_IMAGE_BYTES, REQUEST_TIMEOUT_MS };
