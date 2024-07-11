@@ -194,6 +194,17 @@ function openImageStream(imagePath) {
 }
 
 /**
+ * Best-effort cleanup for a read stream: destroys it if it's still
+ * open. Swallows errors because cleanup must never mask the original
+ * failure reported by the caller.
+ */
+function destroyStreamSafely(stream) {
+    if (stream && typeof stream.destroy === 'function' && !stream.destroyed) {
+        try { stream.destroy(); } catch (_) { /* ignore */ }
+    }
+}
+
+/**
  * Send an image to the DeepAI toonify endpoint and return the response.
  * Uses a buffered read stream to reduce syscall overhead for typical
  * image sizes, and enforces a configurable overall request timeout.
@@ -212,9 +223,7 @@ async function toonifyImage(imagePath, options) {
         ]);
     } finally {
         timeout.cancel();
-        if (typeof stream.destroy === 'function' && !stream.destroyed) {
-            stream.destroy();
-        }
+        destroyStreamSafely(stream);
     }
 }
 
@@ -255,4 +264,4 @@ if (require.main === module) {
     main();
 }
 
-module.exports = { toonifyImage, validateImagePath, isSupportedExtension, formatBytes, formatDuration, logStatus, createTimeout, parsePositiveIntEnv, resolveTimeoutMs, openImageStream, printUsage, SUPPORTED_EXTENSIONS, MAX_IMAGE_BYTES, REQUEST_TIMEOUT_MS };
+module.exports = { toonifyImage, validateImagePath, isSupportedExtension, formatBytes, formatDuration, logStatus, createTimeout, parsePositiveIntEnv, resolveTimeoutMs, openImageStream, destroyStreamSafely, printUsage, SUPPORTED_EXTENSIONS, MAX_IMAGE_BYTES, REQUEST_TIMEOUT_MS };
