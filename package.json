@@ -21,6 +21,7 @@
     "a11y": "pa11y-ci",
     "a11y:axe": "axe ./public --exit",
     "a11y:report": "pa11y-ci --reporter html > a11y-report.html",
+    "a11y:ci": "pa11y-ci --reporter json > a11y-report.json",
     "pretest": "npm run lint",
     "verify": "npm run lint && npm run format:check",
     "verify:full": "npm run verify && npm test",
@@ -28,7 +29,7 @@
     "check:fix": "npm run lint:fix && npm run format && npm test",
     "check:a11y": "npm run a11y && npm run test:a11y",
     "clean": "rimraf coverage node_modules/.cache",
-    "clean:all": "npm run clean && rimraf a11y-report.html",
+    "clean:all": "npm run clean && rimraf a11y-report.html a11y-report.json",
     "audit": "npm audit --audit-level=high",
     "audit:fix": "npm audit fix",
     "prepublishOnly": "npm run check"
