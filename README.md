@@ -16,6 +16,10 @@ A lightweight utility focused on fast, predictable performance.
     - [Automated Checks](#automated-checks)
   - [Tooling](#tooling)
   - [Reporting Issues](#reporting-issues)
+- [Internationalization](#internationalization)
+  - [Text and Translation](#text-and-translation)
+  - [Formatting](#formatting)
+  - [Bidirectional Text](#bidirectional-text)
 - [License](#license)
 
 ## Getting Started
@@ -168,6 +172,48 @@ us reproduce and prioritize, please include:
   was first observed, if known.
 
 Issues tagged `a11y` are treated with the same priority as functional bugs.
+
+## Internationalization
+
+This project is used in environments with a wide variety of languages,
+scripts, and regional conventions. Internationalization (i18n) overlaps
+with accessibility but has its own concerns worth calling out.
+
+### Text and Translation
+
+- **Externalize user-facing strings.** Keep translatable text out of code
+  and templates; reference it through the project's message catalog so
+  translators can work without touching source.
+- **Provide context for translators.** A short comment describing where
+  and how a string appears prevents ambiguous translations, especially
+  for short labels and button text.
+- **Avoid concatenation.** Build full sentences from parameterized
+  templates (`"Deleted {count} items"`) rather than gluing fragments
+  together, since word order varies across languages.
+- **Plan for expansion.** Translated strings are often 30–50% longer than
+  the English source; layouts should accommodate growth without
+  truncation or overflow.
+- **Use plural-aware APIs** (ICU MessageFormat, CLDR plural rules) rather
+  than hand-rolled `if (n === 1)` branches, which fail for languages
+  with more than two plural categories.
+
+### Formatting
+
+- Format dates, times, numbers, and currencies through locale-aware APIs
+  (`Intl.DateTimeFormat`, `Intl.NumberFormat`, or platform equivalents).
+- Do not assume the Gregorian calendar, a 12-hour clock, comma decimal
+  separators, or any particular week-start day; all of these vary.
+- Sort and compare strings with a locale-aware collator rather than
+  byte-wise comparison, which mishandles diacritics and case folding.
+
+### Bidirectional Text
+
+- Test with at least one right-to-left locale (Arabic or Hebrew) to
+  surface mirroring issues in layout, icons, and directional affordances.
+- Use logical CSS properties (`margin-inline-start`, `padding-inline-end`)
+  rather than physical `left`/`right` ones where possible.
+- Set `dir="auto"` on inputs and containers whose contents may switch
+  direction at runtime.
 
 ## License
 
