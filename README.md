@@ -195,7 +195,7 @@ with accessibility but has its own concerns worth calling out.
   truncation or overflow.
 - **Use plural-aware APIs** (ICU MessageFormat, CLDR plural rules) rather
   than hand-rolled `if (n === 1)` branches, which fail for languages
-  with more than two plural categories.
+  with more than two plural categories (Arabic, for example, has six).
 
 ### Formatting
 
