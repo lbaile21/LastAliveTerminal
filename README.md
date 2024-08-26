@@ -20,6 +20,7 @@ A lightweight utility focused on fast, predictable performance.
   - [Text and Translation](#text-and-translation)
   - [Formatting](#formatting)
   - [Bidirectional Text](#bidirectional-text)
+  - [Locale Negotiation](#locale-negotiation)
 - [License](#license)
 
 ## Getting Started
@@ -214,6 +215,16 @@ with accessibility but has its own concerns worth calling out.
   rather than physical `left`/`right` ones where possible.
 - Set `dir="auto"` on inputs and containers whose contents may switch
   direction at runtime.
+
+### Locale Negotiation
+
+- Honor the user's stated preference (account setting, then
+  `Accept-Language`) before falling back to a geolocated guess; IP-based
+  inference is a last resort and should always be overridable.
+- Treat locale tags as BCP 47 strings: match `zh-Hant-HK` against
+  `zh-Hant` before `zh`, and never compare them case-sensitively.
+- Ship a sensible default (typically `en`) for strings that have not yet
+  been translated, and log misses so coverage gaps surface in review.
 
 ## License
 
