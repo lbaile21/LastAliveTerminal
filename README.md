@@ -15,6 +15,7 @@ A lightweight utility focused on fast, predictable performance.
     - [Manual Checks](#manual-checks)
     - [Automated Checks](#automated-checks)
   - [Tooling](#tooling)
+  - [Conformance Target](#conformance-target)
   - [Reporting Issues](#reporting-issues)
 - [Internationalization](#internationalization)
   - [Text and Translation](#text-and-translation)
@@ -156,6 +157,17 @@ workflow:
 - [WAVE](https://wave.webaim.org/) for quick in-page visual audits.
 - [Accessibility Insights](https://accessibilityinsights.io/) for guided
   manual assessments alongside automated checks.
+
+### Conformance Target
+
+This project targets **WCAG 2.2 Level AA** as its baseline. Level A is the
+floor below which we do not knowingly ship; Level AAA criteria are adopted
+opportunistically when they do not conflict with other goals, but are not
+gating for review. When a change cannot meet the AA baseline — for example
+because it depends on an upstream component with known issues — open a
+tracking issue documenting the gap, the user impact, and the planned
+remediation, and link it from the pull request rather than silently
+lowering the bar.
 
 ### Reporting Issues
 
