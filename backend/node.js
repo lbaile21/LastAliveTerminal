@@ -21,7 +21,9 @@ const DEFAULT_REQUEST_TIMEOUT_MS = 120 * 1000;
 
 // Default read-stream chunk size. Larger than Node's 64 KiB default to
 // reduce syscall overhead when streaming multi-MiB images to the API.
-const READ_STREAM_HWM = 1024 * 256;
+// Overridable via TOONIFY_READ_CHUNK_BYTES for tuning on slow disks or
+// when the remote endpoint prefers smaller chunks.
+const DEFAULT_READ_STREAM_HWM = 1024 * 256;
 
 /**
  * Parse a positive integer from an environment variable, falling back
@@ -38,6 +40,7 @@ function parsePositiveIntEnv(name, defaultValue) {
 
 const MAX_IMAGE_BYTES = parsePositiveIntEnv('TOONIFY_MAX_BYTES', DEFAULT_MAX_IMAGE_BYTES);
 const REQUEST_TIMEOUT_MS = parsePositiveIntEnv('TOONIFY_TIMEOUT_MS', DEFAULT_REQUEST_TIMEOUT_MS);
+const READ_STREAM_HWM = parsePositiveIntEnv('TOONIFY_READ_CHUNK_BYTES', DEFAULT_READ_STREAM_HWM);
 
 deepai.setApiKey(API_KEY);
 
@@ -120,6 +123,22 @@ function resolveTimeoutMs(options) {
 }
 
 /**
+ * Pick the read-stream highWaterMark for a given file size. Small
+ * files don't benefit from a large buffer (and would just waste
+ * memory), while very large files can amortise more syscall overhead
+ * with a bigger chunk. The result is always clamped to at least
+ * Node's 16 KiB minimum and never larger than the configured
+ * READ_STREAM_HWM ceiling.
+ */
+function chooseReadHwm(fileSize) {
+    const MIN_HWM = 16 * 1024;
+    if (!Number.isFinite(fileSize) || fileSize <= 0) return READ_STREAM_HWM;
+    if (fileSize <= 64 * 1024) return MIN_HWM;
+    if (fileSize <= 1024 * 1024) return Math.min(64 * 1024, READ_STREAM_HWM);
+    return READ_STREAM_HWM;
+}
+
+/**
  * Stat a path, translating ENOENT/EACCES into friendlier error
  * messages. Returns the fs.Stats object on success.
  */
@@ -136,8 +155,9 @@ function safeStat(imagePath) {
 
 /**
  * Validate that the provided path points to a readable image file
- * with a supported extension and a reasonable size. Throws a
- * descriptive error message on failure.
+ * with a supported extension and a reasonable size. Returns the
+ * fs.Stats object so callers can reuse the size without a second
+ * stat() syscall.
  *
  * @param {string} imagePath Filesystem path to the candidate image.
  * @throws {TypeError} If imagePath is not a non-empty string.
@@ -164,6 +184,7 @@ function validateImagePath(imagePath) {
     if (!SUPPORTED_EXTENSIONS_SET.has(ext)) {
         throw new Error(`Unsupported image extension '${ext}'. Supported: ${SUPPORTED_EXTENSIONS.join(', ')}`);
     }
+    return stat;
 }
 
 /**
@@ -181,16 +202,18 @@ function isSupportedExtension(ext) {
  * Open a buffered read stream for `imagePath` and return both the
  * stream and a promise that rejects if the stream emits an error
  * before it's consumed. Callers are responsible for destroying the
- * stream when finished.
+ * stream when finished. The chunk size is selected based on the
+ * file's size to avoid over-allocating buffers for tiny images.
  */
-function openImageStream(imagePath) {
-    const stream = fs.createReadStream(imagePath, { highWaterMark: READ_STREAM_HWM });
+function openImageStream(imagePath, fileSize) {
+    const highWaterMark = chooseReadHwm(fileSize);
+    const stream = fs.createReadStream(imagePath, { highWaterMark });
     const errorPromise = new Promise((_, reject) => {
         stream.once('error', (err) => {
             reject(new Error(`Failed to read image '${imagePath}': ${err.message}`));
         });
     });
-    return { stream, errorPromise };
+    return { stream, errorPromise, highWaterMark };
 }
 
 /**
@@ -206,14 +229,15 @@ function destroyStreamSafely(stream) {
 
 /**
  * Send an image to the DeepAI toonify endpoint and return the response.
- * Uses a buffered read stream to reduce syscall overhead for typical
- * image sizes, and enforces a configurable overall request timeout.
+ * Uses a size-tuned buffered read stream to reduce syscall overhead
+ * for typical image sizes, and enforces a configurable overall
+ * request timeout.
  */
 async function toonifyImage(imagePath, options) {
-    validateImagePath(imagePath);
+    const stat = validateImagePath(imagePath);
     const timeoutMs = resolveTimeoutMs(options);
 
-    const { stream, errorPromise } = openImageStream(imagePath);
+    const { stream, errorPromise } = openImageStream(imagePath, stat.size);
     const timeout = createTimeout(timeoutMs, 'toonify request');
     try {
         return await Promise.race([
@@ -264,4 +288,4 @@ if (require.main === module) {
     main();
 }
 
-module.exports = { toonifyImage, validateImagePath, isSupportedExtension, formatBytes, formatDuration, logStatus, createTimeout, parsePositiveIntEnv, resolveTimeoutMs, openImageStream, destroyStreamSafely, printUsage, SUPPORTED_EXTENSIONS, MAX_IMAGE_BYTES, REQUEST_TIMEOUT_MS };
+module.exports = { toonifyImage, validateImagePath, isSupportedExtension, formatBytes, formatDuration, logStatus, createTimeout, parsePositiveIntEnv, resolveTimeoutMs, openImageStream, destroyStreamSafely, chooseReadHwm, printUsage, SUPPORTED_EXTENSIONS, MAX_IMAGE_BYTES, REQUEST_TIMEOUT_MS, READ_STREAM_HWM };
