@@ -8,6 +8,7 @@ A lightweight utility focused on fast, predictable performance.
 - [Performance](#performance)
   - [Guidelines](#guidelines)
   - [Benchmarking](#benchmarking)
+  - [Common Pitfalls](#common-pitfalls)
 - [Accessibility](#accessibility)
   - [Principles](#principles)
   - [Contributor Checklist](#contributor-checklist)
@@ -63,6 +64,24 @@ numbers from a repeatable benchmark. A useful report typically contains:
 
 Microbenchmarks are useful for isolating a change, but confirm the win
 shows up in an end-to-end scenario before claiming a speedup.
+
+### Common Pitfalls
+
+A few recurring traps are worth flagging explicitly, since they tend to
+produce misleading results even in otherwise careful benchmarks:
+
+- **Dead-code elimination.** Optimizing compilers and JITs will happily
+  delete work whose result is never observed; ensure benchmark outputs
+  are consumed (printed, summed, or returned) so the measured code
+  actually runs.
+- **Cold vs. warm runs.** Discard the first few iterations to let caches,
+  JIT tiers, and branch predictors stabilize before recording timings.
+- **Noisy neighbors.** Close background applications, disable indexing
+  and auto-update daemons, and avoid running on battery power when
+  collecting numbers intended for comparison.
+- **Single-input bias.** A win at one input size can be a regression at
+  another; sweep across representative sizes rather than tuning to a
+  single data point.
 
 ## Accessibility
 
