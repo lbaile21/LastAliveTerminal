@@ -20,6 +20,9 @@ const TOKEN_UNIT_BI = BigInt(TOKEN_UNIT);
 // Cached base-unit value for BADGE_COST so the common badge-mint path skips
 // the BigInt multiplication entirely.
 const BADGE_COST_BASE_UNITS = BigInt(BADGE_COST) * TOKEN_UNIT_BI;
+// Cached string form, since web3 expects a decimal string and recomputing
+// .toString() on every approve/mint call is wasteful.
+const BADGE_COST_BASE_UNITS_STR = BADGE_COST_BASE_UNITS.toString();
 
 // Convert a whole-token amount into the contract's base units (wei-equivalent).
 // Centralised so callers don't repeat the BigInt math.
@@ -451,7 +454,7 @@ function kotor(scrt) {
   term.echo('                             888                 ');
   term.echo('88888888 .d88b. 88888b.d88b. 88888b. 888 .d88b.  ');
   term.echo('   d88P d88  88b888  888  88b888  88b888d8P  Y8b ');
-  term.echo('  d88P  888  888888  888  888888  88888888888888 ');
+  term.echo('  d88P  888  888  888888  88888888888888 ');
   term.echo(' d88P   Y88..88P888  888  888888 d88P888Y8b.     ');
   term.echo('88888888 `Y88P` 888  888  88888888P  888 `Y8888  ');
     term.echo('                                                 ');
@@ -536,7 +539,11 @@ async function loadWeb3() {
         return;
     }
 
-    window.web3 = new Web3(window.ethereum);
+    // Reuse a single Web3 instance across calls; rebuilding it on every
+    // command was needlessly expensive and triggered redundant provider work.
+    if (!window.web3) {
+        window.web3 = new Web3(window.ethereum);
+    }
     window.ethereum.enable();
 
     if (!isWalletConnected()) {
@@ -571,14 +578,20 @@ async function loadWeb3() {
 
 async function loadLastAliveContr() {
     await loadWeb3();
-  window.lastAlive = await loadLastAlive();
-  console.log('Last Alive Contract is loaded...');
+    // Cache the contract instance: constructing a web3 Contract is non-trivial
+    // (parses ABI, builds method proxies) and the address never changes here.
+    if (!window.lastAlive) {
+        window.lastAlive = await loadLastAlive();
+        console.log('Last Alive Contract is loaded...');
+    }
 }
 
 async function loadBloodTknContr() {
     await loadWeb3();
-  window.bloodToken = await loadblood();
-  console.log('Blood token is loaded...');
+    if (!window.bloodToken) {
+        window.bloodToken = await loadblood();
+        console.log('Blood token is loaded...');
+    }
 }
 
 async function loadblood() {
@@ -1447,7 +1460,7 @@ async function mintToken(num) {
 async function approve() {
   await loadBloodTknContr();
   window.bloodToken.methods
-    .approve(lastAliveAddr, badgeCostInBaseUnits())
+    .approve(lastAliveAddr, BADGE_COST_BASE_UNITS_STR)
     .send({ from: selectedAddress() });
     term.echo('Your are pending approval to mint a badge. Please wait until Metamask confirmation...');
     term.echo(`Make sure you have ${BADGE_COST} Blood Tokens to spend`);
@@ -1460,7 +1473,7 @@ async function mintBadge(name) {
         await loadLastAliveContr();
         var addr = selectedAddress();
         lastAlive.methods
-            .safemint(addr, badgeCostInBaseUnits())
+            .safemint(addr, BADGE_COST_BASE_UNITS_STR)
             .send({ from: addr });
         term.echo(`Your Badge has been generated and sent to...`);
         term.echo(addr);
