@@ -105,7 +105,10 @@ function createTimeout(ms, label) {
     return {
         promise,
         cancel() {
-            if (timer) clearTimeout(timer);
+            if (timer) {
+                clearTimeout(timer);
+                timer = null;
+            }
         },
     };
 }
@@ -204,13 +207,18 @@ function isSupportedExtension(ext) {
  * before it's consumed. Callers are responsible for destroying the
  * stream when finished. The chunk size is selected based on the
  * file's size to avoid over-allocating buffers for tiny images.
+ *
+ * The returned `errorPromise` never resolves; it only rejects. This
+ * makes it safe to include in a Promise.race() without accidentally
+ * masking the real result from the API call.
  */
 function openImageStream(imagePath, fileSize) {
     const highWaterMark = chooseReadHwm(fileSize);
     const stream = fs.createReadStream(imagePath, { highWaterMark });
     const errorPromise = new Promise((_, reject) => {
         stream.once('error', (err) => {
-            reject(new Error(`Failed to read image '${imagePath}': ${err.message}`));
+            const message = (err && err.message) ? err.message : String(err);
+            reject(new Error(`Failed to read image '${imagePath}': ${message}`));
         });
     });
     return { stream, errorPromise, highWaterMark };
@@ -222,8 +230,12 @@ function openImageStream(imagePath, fileSize) {
  * failure reported by the caller.
  */
 function destroyStreamSafely(stream) {
-    if (stream && typeof stream.destroy === 'function' && !stream.destroyed) {
-        try { stream.destroy(); } catch (_) { /* ignore */ }
+    if (!stream || typeof stream.destroy !== 'function') return;
+    if (stream.destroyed) return;
+    try {
+        stream.destroy();
+    } catch (_) {
+        /* ignore: cleanup is best-effort */
     }
 }
 
@@ -231,7 +243,8 @@ function destroyStreamSafely(stream) {
  * Send an image to the DeepAI toonify endpoint and return the response.
  * Uses a size-tuned buffered read stream to reduce syscall overhead
  * for typical image sizes, and enforces a configurable overall
- * request timeout.
+ * request timeout. The stream and timer are always cleaned up, even
+ * when the API call throws synchronously.
  */
 async function toonifyImage(imagePath, options) {
     const stat = validateImagePath(imagePath);
@@ -239,6 +252,9 @@ async function toonifyImage(imagePath, options) {
 
     const { stream, errorPromise } = openImageStream(imagePath, stat.size);
     const timeout = createTimeout(timeoutMs, 'toonify request');
+    // Attach a no-op rejection handler so an early stream error before
+    // Promise.race() subscribes doesn't trigger an unhandledRejection.
+    errorPromise.catch(() => {});
     try {
         return await Promise.race([
             deepai.callStandardApi('toonify', { image: stream }),
