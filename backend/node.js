@@ -29,6 +29,17 @@ const DEFAULT_READ_STREAM_HWM = 1024 * 256;
  * Parse a positive integer from an environment variable, falling back
  * to `defaultValue` when the variable is unset, empty, or invalid.
  * Centralising this keeps env-var handling consistent and testable.
+ *
+ * Accepted values are finite numbers strictly greater than zero; the
+ * result is floored so callers always receive an integer. Negative,
+ * zero, NaN, and non-numeric strings all fall back to `defaultValue`
+ * rather than throwing, since these helpers are evaluated at module
+ * load and a hard failure there would prevent the CLI from even
+ * printing usage text.
+ *
+ * @param {string} name Environment variable name to read.
+ * @param {number} defaultValue Fallback when the variable is unusable.
+ * @returns {number} A positive integer.
  */
 function parsePositiveIntEnv(name, defaultValue) {
     const raw = process.env[name];
@@ -48,6 +59,11 @@ deepai.setApiKey(API_KEY);
  * Format a byte count as a human-readable string (e.g. "1.4 MiB").
  * Used in error messages so operators and screen-reader users get a
  * value that's easier to parse than a raw byte count.
+ *
+ * Uses binary (1024-based) units to match how filesystem tools and
+ * Node's own `fs.Stats.size` are typically interpreted. Sub-KiB
+ * values are rendered without a fractional part to avoid noisy
+ * output like "512.0 B".
  */
 function formatBytes(bytes) {
     if (!Number.isFinite(bytes) || bytes < 0) return String(bytes);
@@ -91,6 +107,11 @@ function logStatus(level, message) {
  * timeout error tagged by `label`. The returned object also exposes a
  * `cancel()` method so callers can clear the underlying timer once
  * the racing work has resolved.
+ *
+ * The error object carries `code = 'ETIMEDOUT'` so callers can
+ * distinguish timeouts from other failures without string-matching
+ * the message. The underlying timer is unref()'d when possible so a
+ * pending timeout never keeps the Node event loop alive on its own.
  */
 function createTimeout(ms, label) {
     let timer;
@@ -245,6 +266,10 @@ function destroyStreamSafely(stream) {
  * for typical image sizes, and enforces a configurable overall
  * request timeout. The stream and timer are always cleaned up, even
  * when the API call throws synchronously.
+ *
+ * @param {string} imagePath Path to a supported image file.
+ * @param {{ timeoutMs?: number }} [options] Optional per-call overrides.
+ * @returns {Promise<object>} The parsed DeepAI response payload.
  */
 async function toonifyImage(imagePath, options) {
     const stat = validateImagePath(imagePath);
