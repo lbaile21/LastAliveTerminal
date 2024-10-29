@@ -23,6 +23,7 @@ A lightweight utility focused on fast, predictable performance.
   - [Formatting](#formatting)
   - [Bidirectional Text](#bidirectional-text)
   - [Locale Negotiation](#locale-negotiation)
+  - [Character Encoding](#character-encoding)
 - [License](#license)
 
 ## Getting Started
@@ -256,6 +257,17 @@ with accessibility but has its own concerns worth calling out.
   `zh-Hant` before `zh`, and never compare them case-sensitively.
 - Ship a sensible default (typically `en`) for strings that have not yet
   been translated, and log misses so coverage gaps surface in review.
+
+### Character Encoding
+
+- Use UTF-8 end to end — source files, message catalogs, database
+  columns, HTTP responses, and filesystem paths. Mixed encodings are a
+  frequent source of mojibake that only surfaces for non-ASCII users.
+- Count user-perceived characters in grapheme clusters, not code units;
+  emoji, combining marks, and many scripts span multiple code points and
+  will be truncated mid-character by naïve `length` or substring calls.
+- Normalize text (typically NFC) before comparison, hashing, or storage
+  as an identifier, so visually identical strings compare equal.
 
 ## License
 
