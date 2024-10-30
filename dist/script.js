@@ -92,6 +92,19 @@ function reportError(message) {
   term.error(text);
 }
 
+// Build the standard transaction options object. Centralised so we don't
+// rebuild the same `{ from: ... }` literal at every call site and so future
+// fields (gas, value) can be added in one place.
+function txOpts(extra) {
+  const opts = { from: selectedAddress() };
+  if (extra) {
+    for (const key in extra) {
+      opts[key] = extra[key];
+    }
+  }
+  return opts;
+}
+
 function exit() {
   $('.tv').addClass('collapse');
   term.disable();
@@ -1453,7 +1466,7 @@ async function mintToken(num) {
     await loadBloodTknContr();
     window.bloodToken.methods
         .mint()
-        .send({ from: selectedAddress(), value: num * TOKEN_UNIT });
+        .send(txOpts({ value: num * TOKEN_UNIT }));
     console.log('You are minting tokens...');
 }
 
@@ -1461,7 +1474,7 @@ async function approve() {
   await loadBloodTknContr();
   window.bloodToken.methods
     .approve(lastAliveAddr, BADGE_COST_BASE_UNITS_STR)
-    .send({ from: selectedAddress() });
+    .send(txOpts());
     term.echo('Your are pending approval to mint a badge. Please wait until Metamask confirmation...');
     term.echo(`Make sure you have ${BADGE_COST} Blood Tokens to spend`);
     approvedFor += BADGE_COST;
@@ -1493,13 +1506,13 @@ async function bite(zombieId, victimId) {
   await loadLastAliveContr();
   window.lastAlive.methods
     .bite(zombieId, victimId)
-    .send({ from: selectedAddress() });
+    .send(txOpts());
 }
 
 async function numberOfSurvivors() {
     await loadLastAliveContr();
     if (lastAlive._address == lastAliveAddr && isOnFantom()) {
-        var num = await window.lastAlive.methods.numberOfSurvivors().call({ from: selectedAddress() });
+        var num = await window.lastAlive.methods.numberOfSurvivors().call(txOpts());
         echoLabelled('Survivors remaining', num);
     }
     else {
