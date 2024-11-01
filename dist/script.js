@@ -25,12 +25,14 @@ const BADGE_COST_BASE_UNITS = BigInt(BADGE_COST) * TOKEN_UNIT_BI;
 const BADGE_COST_BASE_UNITS_STR = BADGE_COST_BASE_UNITS.toString();
 
 // Convert a whole-token amount into the contract's base units (wei-equivalent).
-// Centralised so callers don't repeat the BigInt math.
+// Centralised so callers don't repeat the BigInt math. Accepts any value that
+// BigInt() accepts (number, numeric string, bigint).
 function toBaseUnits(amount) {
   return BigInt(amount) * TOKEN_UNIT_BI;
 }
 
-// Convert a BADGE_COST-sized amount into the contract's base units.
+// Convenience accessor for the cached BADGE_COST base-unit value. Prefer this
+// over toBaseUnits(BADGE_COST) on hot paths.
 function badgeCostInBaseUnits() {
   return BADGE_COST_BASE_UNITS;
 }
