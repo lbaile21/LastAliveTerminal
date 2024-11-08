@@ -201,8 +201,8 @@ us reproduce and prioritize, please include:
   text spacing, or zoom level) active at the time.
 - A screenshot or short screen recording when the issue is visual or
   interaction-based, with any sensitive information redacted.
-- The approximate date and commit or release version where the issue
-  was first observed, if known.
+- The approximate commit or release version where the issue was first
+  observed, if known.
 
 Issues tagged `a11y` are treated with the same priority as functional bugs.
 
