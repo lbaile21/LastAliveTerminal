@@ -4,6 +4,21 @@ const path = require('path');
 const deepai = require('deepai'); // OR include deepai.min.js as a script tag in your HTML
 
 //////////////////Convert Image into Cartoon/////////////////////////
+//
+// This module exposes a small wrapper around DeepAI's `toonify`
+// endpoint plus a handful of helpers (path validation, byte/duration
+// formatting, timeout creation, etc.). It is usable both as a CLI
+// (`node node.js <image>`) and as a library via `require()`.
+//
+// Environment variables:
+//   DEEPAI_API_KEY            API key forwarded to the deepai client.
+//   TOONIFY_MAX_BYTES         Hard cap on input image size, in bytes.
+//   TOONIFY_TIMEOUT_MS        Overall request timeout, in milliseconds.
+//   TOONIFY_READ_CHUNK_BYTES  Upper bound for the read-stream chunk size.
+//
+// All env vars are parsed defensively at module load; malformed values
+// fall back to the documented defaults rather than throwing, so the
+// CLI can still print usage even in a misconfigured environment.
 
 const API_KEY = process.env.DEEPAI_API_KEY || 'quickstart-QUdJIGlzIGNvbWluZy4uLi4K';
 const SUPPORTED_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.bmp', '.gif', '.webp'];
@@ -269,6 +284,8 @@ function destroyStreamSafely(stream) {
  *
  * @param {string} imagePath Path to a supported image file.
  * @param {{ timeoutMs?: number }} [options] Optional per-call overrides.
+ *   - `timeoutMs`: positive integer overriding REQUEST_TIMEOUT_MS for
+ *     this call only. Non-finite or non-positive values are ignored.
  * @returns {Promise<object>} The parsed DeepAI response payload.
  */
 async function toonifyImage(imagePath, options) {
