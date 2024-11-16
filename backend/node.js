@@ -19,6 +19,10 @@ const deepai = require('deepai'); // OR include deepai.min.js as a script tag in
 // All env vars are parsed defensively at module load; malformed values
 // fall back to the documented defaults rather than throwing, so the
 // CLI can still print usage even in a misconfigured environment.
+//
+// Exit codes (CLI mode):
+//   0  success, or `--help`/`-h` requested
+//   1  missing argument, validation failure, or remote API error
 
 const API_KEY = process.env.DEEPAI_API_KEY || 'quickstart-QUdJIGlzIGNvbWluZy4uLi4K';
 const SUPPORTED_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.bmp', '.gif', '.webp'];
