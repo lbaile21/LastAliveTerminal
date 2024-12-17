@@ -20,8 +20,9 @@ const TOKEN_UNIT_BI = BigInt(TOKEN_UNIT);
 // Cached base-unit value for BADGE_COST so the common badge-mint path skips
 // the BigInt multiplication entirely.
 const BADGE_COST_BASE_UNITS = BigInt(BADGE_COST) * TOKEN_UNIT_BI;
-// Cached string form, since web3 expects a decimal string and recomputing
-// .toString() on every approve/mint call is wasteful.
+// Cached decimal string of BADGE_COST_BASE_UNITS. web3 expects amounts as
+// decimal strings, and recomputing .toString() on every approve/mint call is
+// wasteful given the value is a compile-time constant.
 const BADGE_COST_BASE_UNITS_STR = BADGE_COST_BASE_UNITS.toString();
 
 // Convert a whole-token amount into the contract's base units (wei-equivalent).
