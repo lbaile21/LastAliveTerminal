@@ -192,6 +192,9 @@ function safeStat(imagePath) {
         if (e && e.code === 'EACCES') {
             throw new Error(`Permission denied reading: ${imagePath}`);
         }
+        if (e && e.code && e.code !== 'ENOENT') {
+            throw new Error(`Cannot stat '${imagePath}': ${e.message || e.code}`);
+        }
         throw new Error(`File not found: ${imagePath}`);
     }
 }
