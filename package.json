@@ -19,6 +19,7 @@
     "test:integration": "jest --testPathPattern=__tests__/integration",
     "test:a11y": "jest --testPathPattern=__tests__/a11y",
     "test:changed": "jest --onlyChanged",
+    "test:debug": "node --inspect-brk node_modules/.bin/jest --runInBand",
     "a11y": "pa11y-ci",
     "a11y:axe": "axe ./public --exit",
     "a11y:axe:strict": "axe ./public --exit --tags wcag2a,wcag2aa,wcag21a,wcag21aa",
