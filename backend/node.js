@@ -23,6 +23,21 @@ const deepai = require('deepai'); // OR include deepai.min.js as a script tag in
 // Exit codes (CLI mode):
 //   0  success, or `--help`/`-h` requested
 //   1  missing argument, validation failure, or remote API error
+//
+// Quick start (library):
+//
+//   const { toonifyImage } = require('./node.js');
+//   const result = await toonifyImage('./cat.jpg', { timeoutMs: 30_000 });
+//   console.log(result.output_url);
+//
+// Quick start (CLI):
+//
+//   $ DEEPAI_API_KEY=... node node.js ./cat.jpg
+//
+// Logging contract: status lines are written to stderr in the form
+// `[level] message`, while the API payload (or `--help` text when
+// explicitly requested) is the only thing written to stdout. This
+// makes the CLI safe to compose in shell pipelines.
 
 const API_KEY = process.env.DEEPAI_API_KEY || 'quickstart-QUdJIGlzIGNvbWluZy4uLi4K';
 const SUPPORTED_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.bmp', '.gif', '.webp'];
@@ -100,6 +115,11 @@ function formatBytes(bytes) {
  * Format a millisecond duration for human-readable status output.
  * Keeping durations consistent across log lines helps assistive
  * tooling (and humans) skim run summaries.
+ *
+ * Output shape, by magnitude:
+ *   <    1s   -> "<n>ms"            e.g. "250ms"
+ *   <   60s   -> "<n.nn>s"          e.g. "3.14s"
+ *   >=  60s   -> "<m>m <s.s>s"      e.g. "2m 5.0s"
  */
 function formatDuration(ms) {
     if (!Number.isFinite(ms) || ms < 0) return String(ms);
@@ -294,6 +314,9 @@ function destroyStreamSafely(stream) {
  *   - `timeoutMs`: positive integer overriding REQUEST_TIMEOUT_MS for
  *     this call only. Non-finite or non-positive values are ignored.
  * @returns {Promise<object>} The parsed DeepAI response payload.
+ * @throws {Error} With `code = 'ETIMEDOUT'` if the call exceeds the
+ *   resolved timeout, or with a descriptive message on validation,
+ *   stream, or remote API failures.
  */
 async function toonifyImage(imagePath, options) {
     const stat = validateImagePath(imagePath);
