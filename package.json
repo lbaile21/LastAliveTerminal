@@ -53,6 +53,7 @@
     "eslint-plugin-jsx-a11y": "^6.7.1",
     "jest": "^29.3.1",
     "jest-axe": "^7.0.0",
+    "jest-environment-jsdom": "^29.3.1",
     "nodemon": "^2.0.20",
     "pa11y-ci": "^3.0.1",
     "prettier": "^2.8.1",
@@ -88,7 +89,11 @@
         "lines": 75,
         "statements": 75
       }
-    }
+    },
+    "testPathIgnorePatterns": [
+      "/node_modules/",
+      "/coverage/"
+    ]
   },
   "engines": {
     "node": ">=16.0.0",
