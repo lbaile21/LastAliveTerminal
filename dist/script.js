@@ -32,6 +32,14 @@ function toBaseUnits(amount) {
   return BigInt(amount) * TOKEN_UNIT_BI;
 }
 
+// Return the decimal-string representation of a whole-token amount in base
+// units. web3 send() calls expect decimal strings (not Numbers, which lose
+// precision above 2^53), so funnelling callers through this helper keeps the
+// conversion correct and consistent.
+function toBaseUnitsStr(amount) {
+  return toBaseUnits(amount).toString();
+}
+
 // Convenience accessor for the cached BADGE_COST base-unit value. Prefer this
 // over toBaseUnits(BADGE_COST) on hot paths.
 function badgeCostInBaseUnits() {
@@ -44,11 +52,18 @@ function fromBaseUnits(amount) {
 }
 
 // Validate that a value can be safely treated as a positive integer count of
-// whole tokens. Returns true only for finite positive integers; rejects NaN,
-// negatives, fractions, strings that don't parse cleanly, and Infinity.
+// whole tokens. Returns true only for finite positive integers within the
+// safe-integer range; rejects NaN, negatives, fractions, strings that don't
+// parse cleanly, Infinity, and values that would silently lose precision
+// when later multiplied by TOKEN_UNIT.
 function isPositiveTokenAmount(value) {
   const n = Number(value);
-  return Number.isFinite(n) && Number.isInteger(n) && n > 0;
+  return (
+    Number.isFinite(n) &&
+    Number.isInteger(n) &&
+    n > 0 &&
+    n <= Number.MAX_SAFE_INTEGER
+  );
 }
 
 // Return the address currently selected in the connected wallet, or null.
@@ -1467,9 +1482,12 @@ async function mintToken(num) {
     }
     term.echo(`You are currently minting ${num} blood tokens`);
     await loadBloodTknContr();
+    // Pass the value as a decimal string in base units. Multiplying `num` by
+    // TOKEN_UNIT (10^18) as a Number would silently lose precision for
+    // anything but the smallest inputs, so route through toBaseUnitsStr.
     window.bloodToken.methods
         .mint()
-        .send(txOpts({ value: num * TOKEN_UNIT }));
+        .send(txOpts({ value: toBaseUnitsStr(num) }));
     console.log('You are minting tokens...');
 }
 
