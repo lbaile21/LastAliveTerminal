@@ -350,9 +350,16 @@ function printUsage(writer) {
     writer(`Request timeout: ${formatDuration(REQUEST_TIMEOUT_MS)}`);
 }
 
+/**
+ * Return true if the given CLI argument requests help output.
+ */
+function isHelpFlag(arg) {
+    return arg === '-h' || arg === '--help' || arg === 'help';
+}
+
 async function main() {
     const inputPath = process.argv[2];
-    const askedForHelp = inputPath === '-h' || inputPath === '--help';
+    const askedForHelp = isHelpFlag(inputPath);
     if (!inputPath || askedForHelp) {
         // Help text goes to stdout when explicitly requested, stderr otherwise,
         // so screen readers and pipelines get a consistent exit/stream contract.
@@ -376,4 +383,4 @@ if (require.main === module) {
     main();
 }
 
-module.exports = { toonifyImage, validateImagePath, isSupportedExtension, formatBytes, formatDuration, logStatus, createTimeout, parsePositiveIntEnv, resolveTimeoutMs, openImageStream, destroyStreamSafely, chooseReadHwm, printUsage, SUPPORTED_EXTENSIONS, MAX_IMAGE_BYTES, REQUEST_TIMEOUT_MS, READ_STREAM_HWM };
+module.exports = { toonifyImage, validateImagePath, isSupportedExtension, formatBytes, formatDuration, logStatus, createTimeout, parsePositiveIntEnv, resolveTimeoutMs, openImageStream, destroyStreamSafely, chooseReadHwm, printUsage, isHelpFlag, SUPPORTED_EXTENSIONS, MAX_IMAGE_BYTES, REQUEST_TIMEOUT_MS, READ_STREAM_HWM };
