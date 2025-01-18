@@ -62,6 +62,8 @@ numbers from a repeatable benchmark. A useful report typically contains:
   deviation or min/median/max), not just a single best-case number.
 - The build configuration (release/optimized, not debug) and whether
   CPU frequency scaling or turbo boost was pinned during the run.
+- The commit SHA the numbers were taken at, so results stay reproducible
+  as the surrounding code evolves.
 
 Microbenchmarks are useful for isolating a change, but confirm the win
 shows up in an end-to-end scenario before claiming a speedup.
