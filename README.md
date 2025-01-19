@@ -57,11 +57,11 @@ numbers from a repeatable benchmark. A useful report typically contains:
 
 - The hardware, OS, and runtime version used.
 - The input size or workload shape, ideally representative of real usage.
+- The build configuration (release/optimized, not debug) and whether
+  CPU frequency scaling or turbo boost was pinned during the run.
 - Wall-clock time and, where relevant, allocation counts or peak memory.
 - Multiple runs (at least 5) with a measure of variance (e.g. standard
   deviation or min/median/max), not just a single best-case number.
-- The build configuration (release/optimized, not debug) and whether
-  CPU frequency scaling or turbo boost was pinned during the run.
 - The commit SHA the numbers were taken at, so results stay reproducible
   as the surrounding code evolves.
 
@@ -85,6 +85,10 @@ produce misleading results even in otherwise careful benchmarks:
 - **Single-input bias.** A win at one input size can be a regression at
   another; sweep across representative sizes rather than tuning to a
   single data point.
+- **Confusing correlation with causation.** A speedup that appears
+  alongside an unrelated change may be due to code alignment shifts
+  rather than the change itself; re-run with the suspected change
+  reverted to confirm.
 
 ## Accessibility
 
