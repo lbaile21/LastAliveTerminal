@@ -86,6 +86,21 @@ function isWalletConnected() {
   return hasWallet() && !!window.ethereum.selectedAddress;
 }
 
+// Require a connected wallet before proceeding. Returns true if the wallet is
+// connected; otherwise reports a friendly error and returns false so the
+// caller can short-circuit. Centralises a check that several commands need.
+function requireWallet() {
+  if (!hasWallet()) {
+    reportError('No wallet detected. Install Metamask to continue.');
+    return false;
+  }
+  if (!isWalletConnected()) {
+    reportError('Wallet not connected. Run loadWeb3() first.');
+    return false;
+  }
+  return true;
+}
+
 // Echo a screen-reader friendly announcement followed by the visual line.
 // Keeps assistive tech users informed without altering the existing visuals.
 function announce(message) {
@@ -1482,6 +1497,7 @@ async function mintToken(num) {
     }
     term.echo(`You are currently minting ${num} blood tokens`);
     await loadBloodTknContr();
+    if (!requireWallet()) return;
     // Pass the value as a decimal string in base units. Multiplying `num` by
     // TOKEN_UNIT (10^18) as a Number would silently lose precision for
     // anything but the smallest inputs, so route through toBaseUnitsStr.
@@ -1493,6 +1509,7 @@ async function mintToken(num) {
 
 async function approve() {
   await loadBloodTknContr();
+  if (!requireWallet()) return;
   window.bloodToken.methods
     .approve(lastAliveAddr, BADGE_COST_BASE_UNITS_STR)
     .send(txOpts());
@@ -1505,6 +1522,7 @@ async function mintBadge(name) {
   onList = emp.indexOf(name) !== -1;
     if (approvedFor >= BADGE_COST && onList == true) {
         await loadLastAliveContr();
+        if (!requireWallet()) return;
         var addr = selectedAddress();
         lastAlive.methods
             .safemint(addr, BADGE_COST_BASE_UNITS_STR)
