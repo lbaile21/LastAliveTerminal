@@ -127,15 +127,12 @@ function reportError(message) {
 
 // Build the standard transaction options object. Centralised so we don't
 // rebuild the same `{ from: ... }` literal at every call site and so future
-// fields (gas, value) can be added in one place.
+// fields (gas, value) can be added in one place. Uses Object.assign rather
+// than a hand-rolled for..in loop to avoid walking the prototype chain and
+// to let the engine take its fast path for plain-object spreads.
 function txOpts(extra) {
   const opts = { from: selectedAddress() };
-  if (extra) {
-    for (const key in extra) {
-      opts[key] = extra[key];
-    }
-  }
-  return opts;
+  return extra ? Object.assign(opts, extra) : opts;
 }
 
 function exit() {
