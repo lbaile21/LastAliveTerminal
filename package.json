@@ -1,6 +1,6 @@
 {
   "name": "web3-app",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Web3 application",
   "main": "index.js",
   "scripts": {
@@ -29,6 +29,7 @@
     "a11y:contrast": "axe ./public --exit --rules color-contrast",
     "a11y:keyboard": "axe ./public --exit --rules focus-order-semantics,tabindex",
     "a11y:aria": "axe ./public --exit --tags cat.aria",
+    "a11y:landmarks": "axe ./public --exit --rules region,landmark-one-main",
     "a11y:all": "npm run a11y && npm run a11y:axe && npm run test:a11y",
     "pretest": "npm run lint",
     "verify": "npm run lint && npm run format:check",
@@ -41,6 +42,7 @@
     "clean:all": "npm run clean && npm run clean:reports",
     "audit": "npm audit --audit-level=high",
     "audit:fix": "npm audit fix",
+    "audit:prod": "npm audit --production --audit-level=high",
     "prepublishOnly": "npm run check"
   },
   "dependencies": {
@@ -92,7 +94,8 @@
     },
     "testPathIgnorePatterns": [
       "/node_modules/",
-      "/coverage/"
+      "/coverage/",
+      "/dist/"
     ]
   },
   "engines": {
