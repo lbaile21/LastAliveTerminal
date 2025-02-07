@@ -9,6 +9,7 @@ A lightweight utility focused on fast, predictable performance.
   - [Guidelines](#guidelines)
   - [Benchmarking](#benchmarking)
   - [Common Pitfalls](#common-pitfalls)
+  - [Profiling Tools](#profiling-tools)
 - [Accessibility](#accessibility)
   - [Principles](#principles)
   - [Contributor Checklist](#contributor-checklist)
@@ -89,6 +90,27 @@ produce misleading results even in otherwise careful benchmarks:
   alongside an unrelated change may be due to code alignment shifts
   rather than the change itself; re-run with the suspected change
   reverted to confirm.
+
+### Profiling Tools
+
+A benchmark tells you *whether* something got faster; a profiler tells
+you *why*. Reach for one of these when a benchmark surprises you or when
+you need to find a hotspot before optimizing:
+
+- **Sampling profilers** (`perf`, Instruments, `py-spy`, `async-profiler`)
+  for low-overhead, production-safe call-stack attribution. Good first
+  choice when you do not yet know where time is going.
+- **Tracing profilers** (Chrome tracing, `dtrace`, `bpftrace`) when you
+  need ordered event timelines or want to correlate work across threads.
+- **Allocation profilers** (heaptrack, `memray`, pprof's alloc profile)
+  when GC pressure or peak memory is the suspected culprit rather than
+  CPU time.
+- **Flame graphs** to summarize sampled stacks at a glance; wide plateaus
+  are usually more actionable than tall narrow spikes.
+
+Whatever tool you pick, run it against a release build with debug symbols
+retained — stripped binaries produce unreadable stacks, and debug builds
+produce profiles that do not reflect shipped behavior.
 
 ## Accessibility
 
