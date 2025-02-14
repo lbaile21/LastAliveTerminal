@@ -263,9 +263,11 @@ with accessibility but has its own concerns worth calling out.
 - Format dates, times, numbers, and currencies through locale-aware APIs
   (`Intl.DateTimeFormat`, `Intl.NumberFormat`, or platform equivalents).
 - Do not assume the Gregorian calendar, a 12-hour clock, comma decimal
-  separators, or any particular week-start day; all of these vary.
-- Sort and compare strings with a locale-aware collator rather than
-  byte-wise comparison, which mishandles diacritics and case folding.
+  separators, or any particular week-start day; all of these vary by
+  locale and sometimes by user preference within a locale.
+- Sort and compare strings with a locale-aware collator (`Intl.Collator`
+  or equivalent) rather than byte-wise comparison, which mishandles
+  diacritics and case folding.
 
 ### Bidirectional Text
 
