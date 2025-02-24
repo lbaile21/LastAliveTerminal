@@ -25,6 +25,10 @@ A lightweight utility focused on fast, predictable performance.
   - [Bidirectional Text](#bidirectional-text)
   - [Locale Negotiation](#locale-negotiation)
   - [Character Encoding](#character-encoding)
+- [Security](#security)
+  - [Reporting Vulnerabilities](#reporting-vulnerabilities)
+  - [Supported Versions](#supported-versions)
+  - [Dependency Hygiene](#dependency-hygiene)
 - [License](#license)
 
 ## Getting Started
@@ -298,6 +302,49 @@ with accessibility but has its own concerns worth calling out.
   will be truncated mid-character by naïve `length` or substring calls.
 - Normalize text (typically NFC) before comparison, hashing, or storage
   as an identifier, so visually identical strings compare equal.
+
+## Security
+
+Security issues are handled out-of-band from the public issue tracker so
+that fixes can be prepared before details become widely known. The notes
+below describe how to report a suspected vulnerability, which versions
+receive fixes, and the expectations contributors should hold themselves
+to when pulling in third-party code.
+
+### Reporting Vulnerabilities
+
+If you believe you have found a security-relevant defect, please do **not**
+open a public issue. Instead, contact the maintainers through the private
+advisory channel listed in `SECURITY.md` (or, failing that, email the
+address in the repository metadata). A useful report typically includes:
+
+- A description of the issue and the impact you believe it has.
+- Steps to reproduce, ideally with a minimal proof-of-concept.
+- The affected version(s) and platform.
+- Any suggested mitigation, if you have one in mind.
+
+We aim to acknowledge reports within a few business days and to keep
+reporters informed as a fix is developed, tested, and released. Credit is
+offered in the resulting advisory unless you prefer to remain anonymous.
+
+### Supported Versions
+
+Security fixes are backported to the current release line and the
+immediately preceding one. Older releases may receive fixes on a
+best-effort basis but are not guaranteed; consumers on unsupported lines
+are encouraged to plan an upgrade rather than relying on patches.
+
+### Dependency Hygiene
+
+- Prefer well-maintained dependencies with a clear release cadence over
+  abandoned ones, even when the abandoned option is technically simpler.
+- Pin direct dependencies and review lockfile changes during code review;
+  unexplained transitive updates deserve scrutiny.
+- Subscribe the repository to automated advisory feeds (GitHub security
+  advisories, OSV, or equivalent) and treat new findings as work, not
+  noise.
+- When removing a dependency, also remove any configuration, scripts, or
+  CI steps that referenced it, so the attack surface actually shrinks.
 
 ## License
 
