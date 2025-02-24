@@ -76,6 +76,7 @@
       "!**/coverage/**",
       "!**/test/**",
       "!**/__tests__/**",
+      "!**/dist/**",
       "!jest.config.js"
     ],
     "coverageReporters": [
