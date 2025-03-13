@@ -96,7 +96,8 @@
     "testPathIgnorePatterns": [
       "/node_modules/",
       "/coverage/",
-      "/dist/"
+      "/dist/",
+      "/build/"
     ]
   },
   "engines": {
