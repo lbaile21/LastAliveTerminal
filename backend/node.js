@@ -37,7 +37,8 @@ const deepai = require('deepai'); // OR include deepai.min.js as a script tag in
 // Logging contract: status lines are written to stderr in the form
 // `[level] message`, while the API payload (or `--help` text when
 // explicitly requested) is the only thing written to stdout. This
-// makes the CLI safe to compose in shell pipelines.
+// makes the CLI safe to compose in shell pipelines and predictable
+// for screen readers that announce stderr separately from stdout.
 
 const API_KEY = process.env.DEEPAI_API_KEY || 'quickstart-QUdJIGlzIGNvbWluZy4uLi4K';
 const SUPPORTED_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.bmp', '.gif', '.webp'];
@@ -135,9 +136,12 @@ function formatDuration(ms) {
  * Emit a status line to stderr in a stable, screen-reader-friendly
  * format: "[level] message". Centralising this keeps log output
  * predictable for assistive tooling that consumes our stderr stream.
+ * Unknown or empty levels are normalised to "info" so the bracketed
+ * prefix is never blank, which would otherwise produce lines like
+ * "[] message" that some screen readers announce awkwardly.
  */
 function logStatus(level, message) {
-    const lvl = String(level || 'info').toLowerCase();
+    const lvl = String(level || 'info').toLowerCase().trim() || 'info';
     console.error(`[${lvl}] ${message}`);
 }
 
