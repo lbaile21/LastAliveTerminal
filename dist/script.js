@@ -157,6 +157,11 @@ function isCallableCommand(name) {
   return CALLABLE_COMMANDS_SET.has(name);
 }
 
+// True once the user has completed the username + password challenge.
+function isLoggedIn() {
+  return login === true;
+}
+
 var term = $('#terminal').terminal(
     function (command, term) {
     var cmd = $.terminal.parse_command(command);
