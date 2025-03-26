@@ -269,6 +269,41 @@ function isSupportedExtension(ext) {
 }
 
 /**
+ * Quick, side-effect-free preflight check for a candidate image path.
+ * Wraps validateImagePath() and reports a structured result instead of
+ * throwing, which is convenient for callers that want to surface every
+ * problem in a batch (e.g. a directory walker filtering candidates)
+ * without paying the cost of try/catch on the hot path.
+ *
+ * The returned object always has a boolean `ok` field. On success it
+ * also exposes `size` (bytes) and `ext` (lowercase, dot-prefixed). On
+ * failure it exposes `reason` (a short human-readable string) and
+ * `code` (one of: 'EINVAL', 'ENOENT', 'EACCES', 'EISDIR', 'EEMPTY',
+ * 'E2BIG', 'EEXT', 'EUNKNOWN').
+ *
+ * @param {string} imagePath Candidate filesystem path.
+ * @returns {{ok: true, size: number, ext: string} |
+ *           {ok: false, reason: string, code: string}}
+ */
+function inspectImagePath(imagePath) {
+    try {
+        const stat = validateImagePath(imagePath);
+        return { ok: true, size: stat.size, ext: path.extname(imagePath).toLowerCase() };
+    } catch (err) {
+        const reason = (err && err.message) ? err.message : String(err);
+        let code = 'EUNKNOWN';
+        if (err instanceof TypeError) code = 'EINVAL';
+        else if (/^File not found:/.test(reason)) code = 'ENOENT';
+        else if (/^Permission denied/.test(reason)) code = 'EACCES';
+        else if (/^Not a regular file:/.test(reason)) code = 'EISDIR';
+        else if (/^Image file is empty:/.test(reason)) code = 'EEMPTY';
+        else if (/^Image too large/.test(reason)) code = 'E2BIG';
+        else if (/^Unsupported image extension/.test(reason)) code = 'EEXT';
+        return { ok: false, reason, code };
+    }
+}
+
+/**
  * Open a buffered read stream for `imagePath` and return both the
  * stream and a promise that rejects if the stream emits an error
  * before it's consumed. Callers are responsible for destroying the
@@ -387,4 +422,4 @@ if (require.main === module) {
     main();
 }
 
-module.exports = { toonifyImage, validateImagePath, isSupportedExtension, formatBytes, formatDuration, logStatus, createTimeout, parsePositiveIntEnv, resolveTimeoutMs, openImageStream, destroyStreamSafely, chooseReadHwm, printUsage, isHelpFlag, SUPPORTED_EXTENSIONS, MAX_IMAGE_BYTES, REQUEST_TIMEOUT_MS, READ_STREAM_HWM };
+module.exports = { toonifyImage, validateImagePath, inspectImagePath, isSupportedExtension, formatBytes, formatDuration, logStatus, createTimeout, parsePositiveIntEnv, resolveTimeoutMs, openImageStream, destroyStreamSafely, chooseReadHwm, printUsage, isHelpFlag, SUPPORTED_EXTENSIONS, MAX_IMAGE_BYTES, REQUEST_TIMEOUT_MS, READ_STREAM_HWM };
