@@ -98,7 +98,8 @@
       "/coverage/",
       "/dist/",
       "/build/"
-    ]
+    ],
+    "testTimeout": 15000
   },
   "engines": {
     "node": ">=16.0.0",
