@@ -79,12 +79,7 @@
       "!**/dist/**",
       "!jest.config.js"
     ],
-    "coverageReporters": [
-      "text",
-      "text-summary",
-      "lcov",
-      "html"
-    ],
+    "coverageReporters": ["text", "text-summary", "lcov", "html"],
     "coverageThreshold": {
       "global": {
         "branches": 70,
