@@ -34,11 +34,26 @@ const deepai = require('deepai'); // OR include deepai.min.js as a script tag in
 //
 //   $ DEEPAI_API_KEY=... node node.js ./cat.jpg
 //
+// Batch / filtering pattern (library):
+//
+//   const { inspectImagePath, isSupportedExtension } = require('./node.js');
+//   const candidates = fs.readdirSync(dir).filter(isSupportedExtension);
+//   for (const name of candidates) {
+//       const report = inspectImagePath(path.join(dir, name));
+//       if (!report.ok) console.warn(`skip ${name}: ${report.reason}`);
+//   }
+//
 // Logging contract: status lines are written to stderr in the form
 // `[level] message`, while the API payload (or `--help` text when
 // explicitly requested) is the only thing written to stdout. This
 // makes the CLI safe to compose in shell pipelines and predictable
 // for screen readers that announce stderr separately from stdout.
+//
+// Thread/concurrency notes: the module is stateless aside from the
+// one-time `deepai.setApiKey()` call at load time, so `toonifyImage`
+// is safe to invoke concurrently from the same process. Each call
+// opens its own read stream and timer, and cleans both up in a
+// `finally` block regardless of success or failure.
 
 const API_KEY = process.env.DEEPAI_API_KEY || 'quickstart-QUdJIGlzIGNvbWluZy4uLi4K';
 const SUPPORTED_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.bmp', '.gif', '.webp'];
@@ -391,6 +406,8 @@ function printUsage(writer) {
 
 /**
  * Return true if the given CLI argument requests help output.
+ * Accepts the common Unix-style flags (`-h`, `--help`) as well as the
+ * bare subcommand-style `help`, matching what users typically try first.
  */
 function isHelpFlag(arg) {
     return arg === '-h' || arg === '--help' || arg === 'help';
