@@ -101,6 +101,17 @@ function requireWallet() {
   return true;
 }
 
+// Require that the connected wallet is on the Fantom network before
+// proceeding. Used by read/write paths that would otherwise silently target
+// the wrong chain. Returns true when the chain check passes.
+function requireFantom() {
+  if (!isOnFantom()) {
+    reportError('Wrong network. Please switch to the Fantom Network.');
+    return false;
+  }
+  return true;
+}
+
 // Echo a screen-reader friendly announcement followed by the visual line.
 // Keeps assistive tech users informed without altering the existing visuals.
 function announce(message) {
@@ -340,12 +351,18 @@ function web3() {
 }
 
 function addToStaff(name) {
-  if (!name || typeof name !== 'string') {
+  if (!name || typeof name !== 'string' || !name.trim()) {
     term.echo("Please pass a valid name: addToStaff('<Name>')");
     return;
   }
+  const trimmed = name.trim();
+  if (emp.indexOf(trimmed) !== -1) {
+    term.echo(`${trimmed} is already on the staff list.`);
+    onList = true;
+    return;
+  }
   term.echo("Adding you to the staff list...")
-  emp.push(name);
+  emp.push(trimmed);
   onList = true;
 }
 
@@ -1552,13 +1569,14 @@ async function bite(zombieId, victimId) {
 
 async function numberOfSurvivors() {
     await loadLastAliveContr();
-    if (lastAlive._address == lastAliveAddr && isOnFantom()) {
-        var num = await window.lastAlive.methods.numberOfSurvivors().call(txOpts());
-        echoLabelled('Survivors remaining', num);
+    if (!requireWallet()) return;
+    if (!requireFantom()) return;
+    if (lastAlive._address !== lastAliveAddr) {
+        reportError('Last Alive contract address mismatch.');
+        return;
     }
-    else {
-        reportError('Something went wrong!');
-    }
+    var num = await window.lastAlive.methods.numberOfSurvivors().call(txOpts());
+    echoLabelled('Survivors remaining', num);
 }
 
 async function myBalance() {
