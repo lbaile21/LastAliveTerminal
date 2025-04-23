@@ -29,6 +29,7 @@ A lightweight utility focused on fast, predictable performance.
   - [Reporting Vulnerabilities](#reporting-vulnerabilities)
   - [Supported Versions](#supported-versions)
   - [Dependency Hygiene](#dependency-hygiene)
+  - [Secrets and Credentials](#secrets-and-credentials)
 - [License](#license)
 
 ## Getting Started
@@ -345,6 +346,23 @@ are encouraged to plan an upgrade rather than relying on patches.
   noise.
 - When removing a dependency, also remove any configuration, scripts, or
   CI steps that referenced it, so the attack surface actually shrinks.
+
+### Secrets and Credentials
+
+Leaked credentials are one of the most common root causes of incidents,
+and they are almost always preventable with a little discipline up front:
+
+- **Never commit secrets** — API keys, tokens, private keys, or database
+  passwords — to the repository, even in tests, fixtures, or example
+  configs. Use placeholders and document how to supply real values at
+  runtime via environment variables or a secret manager.
+- **Enable pre-commit scanning** (gitleaks, trufflehog, or equivalent) so
+  accidental commits are caught before they are pushed.
+- **Rotate on exposure, not on convenience.** If a secret reaches a
+  public surface — even briefly — treat it as compromised and rotate it,
+  rather than relying on a force-push to erase history.
+- **Scope credentials narrowly.** Prefer short-lived, least-privilege
+  tokens over long-lived ones with broad permissions, especially for CI.
 
 ## License
 
