@@ -283,6 +283,19 @@ function isSupportedExtension(ext) {
     return SUPPORTED_EXTENSIONS_SET.has(normalised);
 }
 
+// Map a validateImagePath() error message to a stable short code used
+// by inspectImagePath() callers (e.g. for grouping skip reasons in a
+// batch report). Kept as a table so adding a new validation case only
+// requires touching one place.
+const VALIDATION_ERROR_CODES = [
+    [/^File not found:/,             'ENOENT'],
+    [/^Permission denied/,           'EACCES'],
+    [/^Not a regular file:/,         'EISDIR'],
+    [/^Image file is empty:/,        'EEMPTY'],
+    [/^Image too large/,             'E2BIG'],
+    [/^Unsupported image extension/, 'EEXT'],
+];
+
 /**
  * Quick, side-effect-free preflight check for a candidate image path.
  * Wraps validateImagePath() and reports a structured result instead of
@@ -307,13 +320,12 @@ function inspectImagePath(imagePath) {
     } catch (err) {
         const reason = (err && err.message) ? err.message : String(err);
         let code = 'EUNKNOWN';
-        if (err instanceof TypeError) code = 'EINVAL';
-        else if (/^File not found:/.test(reason)) code = 'ENOENT';
-        else if (/^Permission denied/.test(reason)) code = 'EACCES';
-        else if (/^Not a regular file:/.test(reason)) code = 'EISDIR';
-        else if (/^Image file is empty:/.test(reason)) code = 'EEMPTY';
-        else if (/^Image too large/.test(reason)) code = 'E2BIG';
-        else if (/^Unsupported image extension/.test(reason)) code = 'EEXT';
+        if (err instanceof TypeError) {
+            code = 'EINVAL';
+        } else {
+            const match = VALIDATION_ERROR_CODES.find(([re]) => re.test(reason));
+            if (match) code = match[1];
+        }
         return { ok: false, reason, code };
     }
 }
