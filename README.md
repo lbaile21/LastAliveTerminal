@@ -30,6 +30,7 @@ A lightweight utility focused on fast, predictable performance.
   - [Supported Versions](#supported-versions)
   - [Dependency Hygiene](#dependency-hygiene)
   - [Secrets and Credentials](#secrets-and-credentials)
+  - [Build and Supply Chain](#build-and-supply-chain)
 - [License](#license)
 
 ## Getting Started
@@ -363,6 +364,25 @@ and they are almost always preventable with a little discipline up front:
   rather than relying on a force-push to erase history.
 - **Scope credentials narrowly.** Prefer short-lived, least-privilege
   tokens over long-lived ones with broad permissions, especially for CI.
+
+### Build and Supply Chain
+
+The code you ship is only as trustworthy as the pipeline that produced it.
+A few practices reduce the risk of a compromised build silently reaching
+users:
+
+- **Reproducible builds where feasible.** Pin compiler and toolchain
+  versions, and prefer build steps whose output depends only on declared
+  inputs, so two independent rebuilds of the same commit agree.
+- **Verify artifact integrity.** Publish checksums (and, for releases,
+  signatures) alongside binaries, and document how downstream consumers
+  can verify them before installation.
+- **Treat CI as production.** Restrict who can modify workflow files,
+  require review on changes to release pipelines, and avoid running
+  untrusted pull-request code with access to release credentials.
+- **Generate an SBOM.** Emit a software bill of materials (CycloneDX or
+  SPDX) with each release so consumers can quickly assess exposure when
+  a new advisory lands against a transitive dependency.
 
 ## License
 
