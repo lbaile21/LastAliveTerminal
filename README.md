@@ -31,6 +31,9 @@ A lightweight utility focused on fast, predictable performance.
   - [Dependency Hygiene](#dependency-hygiene)
   - [Secrets and Credentials](#secrets-and-credentials)
   - [Build and Supply Chain](#build-and-supply-chain)
+- [Logging and Observability](#logging-and-observability)
+  - [Structured Logs](#structured-logs)
+  - [Sensitive Data](#sensitive-data)
 - [License](#license)
 
 ## Getting Started
@@ -383,6 +386,35 @@ users:
 - **Generate an SBOM.** Emit a software bill of materials (CycloneDX or
   SPDX) with each release so consumers can quickly assess exposure when
   a new advisory lands against a transitive dependency.
+
+## Logging and Observability
+
+Logs are a debugging tool first and an audit trail second; both uses are
+better served by a small amount of up-front discipline than by trying to
+clean things up after an incident.
+
+### Structured Logs
+
+- Emit logs as structured records (JSON or logfmt) rather than free-form
+  strings, so fields can be filtered and aggregated without regex tricks.
+- Include a stable event name or code on each record; human-readable
+  messages are fine, but tooling should not have to parse them.
+- Attach a correlation or request ID to every log line produced while
+  handling a unit of work, so related entries can be reassembled later.
+- Pick log levels deliberately: `error` for actionable failures, `warn`
+  for recoverable anomalies, `info` for state changes worth keeping, and
+  `debug` for detail that is off by default in production.
+
+### Sensitive Data
+
+- Never log raw credentials, tokens, session cookies, or full payment
+  details; redact them at the logging boundary rather than relying on
+  downstream filters.
+- Treat personal data as sensitive by default and log identifiers (a
+  user ID) rather than contents (an email address) wherever the
+  identifier is sufficient for debugging.
+- Set a retention policy for log storage that matches the sensitivity of
+  what is captured, and verify periodically that it is actually enforced.
 
 ## License
 
