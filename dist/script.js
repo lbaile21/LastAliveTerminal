@@ -59,7 +59,6 @@ function fromBaseUnits(amount) {
 function isPositiveTokenAmount(value) {
   const n = Number(value);
   return (
-    Number.isFinite(n) &&
     Number.isInteger(n) &&
     n > 0 &&
     n <= Number.MAX_SAFE_INTEGER
