@@ -608,7 +608,20 @@ async function loadWeb3() {
     if (!window.web3) {
         window.web3 = new Web3(window.ethereum);
     }
-    window.ethereum.enable();
+    // Prefer the modern eth_requestAccounts RPC over the deprecated
+    // ethereum.enable() shim. Await it so subsequent code can rely on the
+    // wallet having actually surfaced an account, and surface failures
+    // (e.g. user rejected the prompt) instead of swallowing them silently.
+    try {
+        if (typeof window.ethereum.request === 'function') {
+            await window.ethereum.request({ method: 'eth_requestAccounts' });
+        } else if (typeof window.ethereum.enable === 'function') {
+            await window.ethereum.enable();
+        }
+    } catch (err) {
+        reportError('Wallet connection rejected: ' + (err && err.message ? err.message : err));
+        return;
+    }
 
     if (!isWalletConnected()) {
         term.echo("You have successfully connected to Web3")
