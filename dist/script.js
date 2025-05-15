@@ -58,11 +58,7 @@ function fromBaseUnits(amount) {
 // when later multiplied by TOKEN_UNIT.
 function isPositiveTokenAmount(value) {
   const n = Number(value);
-  return (
-    Number.isInteger(n) &&
-    n > 0 &&
-    n <= Number.MAX_SAFE_INTEGER
-  );
+  return Number.isInteger(n) && n > 0 && n <= Number.MAX_SAFE_INTEGER;
 }
 
 // Return the address currently selected in the connected wallet, or null.
