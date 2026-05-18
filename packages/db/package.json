@@ -1,0 +1,17 @@
+{
+  "name": "@last-alive/db",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Supabase Postgres schema, migrations and RLS policies for Last Alive.",
+  "type": "module",
+  "scripts": {
+    "seed": "tsx scripts/seed.ts"
+  },
+  "dependencies": {
+    "@last-alive/engine": "workspace:*",
+    "@supabase/supabase-js": "^2.47.10"
+  },
+  "devDependencies": {
+    "tsx": "^4.19.2"
+  }
+}
